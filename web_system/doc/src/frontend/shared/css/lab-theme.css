@@ -1,0 +1,1029 @@
+/* lab-theme.css: 「制御科監修スープ研究所」の世界観を担当する共通テーマ
+   色・フォントを変えたくなったら、まずこのファイルの変数だけ触ればよい構成にしている */
+
+:root {
+  --lab-bg: #0f1210;
+  --lab-panel: #171b19;
+  --lab-panel-2: #1e2321;
+  --lab-border: #33403a;
+  --lab-border-strong: #4a5a52;
+  --lab-accent: #4fd1a5;
+  --lab-accent-dim: rgba(79, 209, 165, 0.12);
+  --lab-text: #e6e8e3;
+  --lab-text-muted: #8a9490;
+  --lab-warning: #e0b34f;
+  --lab-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.lab-device {
+  width: 340px;
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+  background-image:
+    linear-gradient(var(--lab-border) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, var(--lab-border) 0.5px, transparent 0.5px);
+  background-size: 14px 14px;
+}
+
+.lab-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid var(--lab-border-strong);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.lab-header .lab-title {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.lab-header .lab-version {
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  color: var(--lab-accent);
+  margin-top: 2px;
+}
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.lab-card {
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--lab-panel-2);
+  text-align: left;
+  color: var(--lab-text);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.lab-card:hover {
+  border-color: var(--lab-border-strong);
+}
+
+.lab-card.selected {
+  border-color: var(--lab-accent);
+  background: var(--lab-accent-dim);
+}
+
+.lab-card .lab-photo {
+  height: 64px;
+  border: 1px dashed var(--lab-border-strong);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lab-font-mono);
+  font-size: 10px;
+  color: var(--lab-text-muted);
+  margin-bottom: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lab-photo img,
+.lab-modal-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lab-photo-fallback {
+  display: none;
+}
+
+.lab-photo-fallback.show {
+  display: block;
+}
+
+.lab-card .lab-id {
+  font-family: var(--lab-font-mono);
+  font-size: 10px;
+  color: var(--lab-text-muted);
+  margin-bottom: 2px;
+}
+
+.lab-card .lab-name {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.lab-card .lab-price {
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.lab-card.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.lab-next {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 6px;
+  color: var(--lab-text);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 10px;
+  letter-spacing: 0.5px;
+  transition: border-color 0.15s ease;
+}
+
+.lab-next:not(:disabled):hover {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+}
+
+.lab-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* モーダル */
+
+.lab-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 16, 0.35);
+  backdrop-filter: blur(1px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.lab-modal-overlay.open {
+  display: flex;
+}
+
+.lab-modal {
+  width: 280px;
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.lab-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.lab-modal-head .lab-modal-title {
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+}
+
+.lab-modal-head .lab-modal-close {
+  background: none;
+  border: none;
+  color: var(--lab-text-muted);
+  font-size: 14px;
+}
+
+.lab-modal-photo {
+  height: 110px;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  color: var(--lab-text-muted);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lab-modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.lab-modal-price {
+  font-family: var(--lab-font-mono);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.lab-qty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--lab-font-mono);
+}
+
+.lab-qty button {
+  background: none;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 4px;
+  color: var(--lab-text);
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+}
+
+.lab-qty span {
+  min-width: 14px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.lab-choose {
+  width: 100%;
+  background: var(--lab-accent);
+  color: #04342c;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 9px;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================
+   ステージ：背景の装飾ウィンドウ + 手前のメニューを重ねて表示する舞台
+   ========================================================== */
+
+.lab-stage {
+  position: relative;
+  width: 340px;
+  height: 480px;
+}
+
+/* 背景に並ぶ、選べない演出用ウィンドウ(ロボット映像など) */
+.lab-bg-window {
+  position: absolute;
+  width: 300px;
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border);
+  border-radius: 8px;
+  padding: 10px;
+  opacity: 0;
+  transform: translateY(14px) scale(0.97);
+  animation: lab-window-in 0.5s ease forwards;
+}
+
+.lab-bg-window .lab-bg-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--lab-font-mono);
+  font-size: 9px;
+  color: var(--lab-text-muted);
+  border-bottom: 1px solid var(--lab-border);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.lab-bg-window .lab-bg-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lab-accent);
+}
+
+.lab-bg-window .lab-bg-feed {
+  height: 70px;
+  border: 1px dashed var(--lab-border-strong);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lab-font-mono);
+  font-size: 9px;
+  color: var(--lab-text-muted);
+}
+
+/* 一番手前、実際に操作できるメニュー本体 */
+.lab-device.lab-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  opacity: 0;
+  transform: translateY(14px) scale(0.97);
+  animation: lab-window-in 0.5s ease forwards;
+}
+
+@keyframes lab-window-in {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================================
+   縦積みリスト形式のカード(SPL-01 / SPL-02 / SPL-03)
+   ========================================================== */
+
+.lab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lab-list-item {
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--lab-panel-2);
+  text-align: left;
+  color: var(--lab-text);
+}
+
+.lab-list-item.selected {
+  border-color: var(--lab-accent);
+}
+
+.lab-list-item.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.lab-list-head {
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--lab-border);
+  color: var(--lab-text-muted);
+}
+
+.lab-list-item.selected .lab-list-head {
+  color: var(--lab-accent);
+  border-bottom-color: var(--lab-accent);
+}
+
+.lab-list-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.lab-list-body .lab-list-price {
+  font-family: var(--lab-font-mono);
+  font-weight: 500;
+}
+
+/* ==========================================================
+   提供方法・注文確認画面(dock_select.html)
+   ========================================================== */
+
+.lab-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.lab-back {
+  background: none;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 6px;
+  color: var(--lab-text);
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  padding: 5px 10px;
+}
+
+.lab-back:hover {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+}
+
+.lab-topbar .lab-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.lab-section-label {
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  color: var(--lab-text-muted);
+  margin: 4px 0 8px;
+}
+
+.lab-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--lab-panel-2);
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  color: var(--lab-text);
+  text-align: left;
+  font-size: 13px;
+}
+
+.lab-option:hover {
+  border-color: var(--lab-border-strong);
+}
+
+.lab-option.selected {
+  border-color: var(--lab-accent);
+}
+
+.lab-option-box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-option.selected .lab-option-box {
+  border-color: var(--lab-accent);
+  background: var(--lab-accent);
+}
+
+.lab-option.selected .lab-option-box::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #04342c;
+  border-radius: 1px;
+}
+
+.lab-people-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--lab-panel-2);
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: -2px 0 14px;
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+}
+
+.lab-people-row input {
+  width: 50px;
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 4px;
+  color: var(--lab-text);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  text-align: center;
+  padding: 4px;
+}
+
+.lab-summary-box {
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.lab-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 3px 0;
+}
+
+.lab-summary-row .lab-summary-name {
+  color: var(--lab-text);
+}
+
+.lab-summary-row .lab-summary-qty {
+  font-family: var(--lab-font-mono);
+  color: var(--lab-text-muted);
+}
+
+.lab-summary-divider {
+  border: none;
+  border-top: 1px solid var(--lab-border);
+  margin: 8px 0;
+}
+
+.lab-summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+}
+
+.lab-summary-total .lab-summary-total-price {
+  color: var(--lab-accent);
+  font-weight: 500;
+}
+
+.lab-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==========================================================
+   イートイン/テイクアウト・人数入力画面(dock_select.html)
+   ========================================================== */
+
+.lab-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--lab-border-strong);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.lab-back-btn {
+  background: none;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 6px;
+  color: var(--lab-text-muted);
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  padding: 5px 10px;
+}
+
+.lab-back-btn:hover {
+  color: var(--lab-text);
+  border-color: var(--lab-accent);
+}
+
+.lab-header-row .lab-title {
+  font-size: 13px;
+}
+
+.lab-section-label {
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  color: var(--lab-text-muted);
+  margin-bottom: 8px;
+}
+
+.lab-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--lab-panel-2);
+  cursor: pointer;
+}
+
+.lab-option-row.checked {
+  border-color: var(--lab-accent);
+  background: var(--lab-accent-dim);
+}
+
+.lab-option-box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--lab-accent);
+}
+
+.lab-option-row.checked .lab-option-box {
+  border-color: var(--lab-accent);
+}
+
+.lab-option-row .check-mark::after {
+  content: "";
+}
+
+.lab-option-row.checked .check-mark::after {
+  content: "✓";
+}
+
+.lab-option-row span.lab-option-label {
+  font-size: 13px;
+}
+
+.lab-people-row {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: -2px 0 14px;
+  background: var(--lab-panel-2);
+}
+
+.lab-people-row.visible {
+  display: flex;
+}
+
+.lab-people-row .lab-people-label {
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  color: var(--lab-text-muted);
+}
+
+.lab-summary-box {
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 4px 0 16px;
+  font-family: var(--lab-font-mono);
+}
+
+.lab-summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 5px;
+  color: var(--lab-text);
+}
+
+.lab-summary-divider {
+  border-top: 1px solid var(--lab-border);
+  margin: 8px 0;
+}
+
+.lab-summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.lab-summary-total .lab-accent-text {
+  color: var(--lab-accent);
+}
+
+.lab-confirm {
+  width: 100%;
+  background: var(--lab-accent);
+  color: #04342c;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 10px;
+  letter-spacing: 0.5px;
+}
+
+.lab-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==========================================================
+   tracking.html 専用スタイル
+   このトラッキング画面は「制御室そのもの」を見せる画面なので、
+   他の画面より研究所・管制室らしい装飾を強めにしている。
+   ========================================================== */
+
+.lab-track-shell {
+  width: 320px;
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 10px;
+  padding: 14px;
+  position: relative;
+  background-image:
+    linear-gradient(var(--lab-border) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, var(--lab-border) 0.5px, transparent 0.5px);
+  background-size: 14px 14px;
+}
+
+.lab-track-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--lab-font-mono);
+  font-size: 10px;
+  color: var(--lab-text-muted);
+  border-bottom: 1px solid var(--lab-border-strong);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+/* ---- 2x2グリッド ---- */
+
+.lab-track-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lab-track-row {
+  display: flex;
+  gap: 8px;
+  height: 110px;
+}
+
+.lab-track-cell {
+  flex: 1; /* 行の中では、指定が無ければ均等に幅を分け合う */
+  min-width: 0; /* 中身(動画など)の実際のサイズに幅を引っ張られないようにする */
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  background: var(--lab-panel-2);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 幅の比率はここで調整する。数字を変えるだけで小さく/大きくできる */
+/* 上の .lab-track-cell より後ろに書くことで、こちらの flex 値で上書きする */
+.lab-cell-small {
+  flex: 0.7;
+}
+
+.lab-cell-large {
+  flex: 1.3;
+}
+
+
+.lab-track-cell .lab-track-label {
+  font-family: var(--lab-font-mono);
+  font-size: 9px;
+  color: var(--lab-text-muted);
+  border-bottom: 1px solid var(--lab-border);
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+/* ---- 左上：現在の状況(文字)+動画 ---- */
+
+.lab-status-video-cell {
+  padding: 8px;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-status-mini {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.lab-status-icon-mini {
+  font-size: 26px;
+  color: var(--lab-accent);
+}
+
+.lab-status-text-mini {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lab-text);
+}
+
+.lab-status-mini.warning .lab-status-icon-mini,
+.lab-status-mini.warning .lab-status-text-mini {
+  color: var(--lab-warning);
+}
+
+/* ---- 右上：注文情報 ---- */
+
+.lab-order-cell {
+  justify-content: space-around;
+}
+
+.lab-order-cell .lab-order-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--lab-font-mono);
+  font-size: 10.5px;
+  color: var(--lab-text);
+}
+
+.lab-order-cell .lab-order-row span:first-child {
+  color: var(--lab-text-muted);
+}
+
+/* ---- 左下：流れるコード演出(意味はない飾り) ---- */
+
+.lab-code-cell {
+  position: relative;
+}
+
+.lab-code-viewport {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+.lab-code-scroll {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* 新しい行は常に一番下に追加され、古い行は上へ押し出される */
+  font-family: var(--lab-font-mono);
+  font-size: 9px;
+  line-height: 1.7;
+  color: var(--lab-text-muted);
+  white-space: pre;
+}
+
+.code-cursor {
+  color: var(--lab-accent);
+  animation: lab-cursor-blink 0.8s steps(1) infinite;
+}
+
+@keyframes lab-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.lab-code-scroll .kw { color: var(--lab-accent); }
+.lab-code-scroll .fn { color: var(--lab-text); }
+
+/* ---- 動画(左上セルの下半分) ---- */
+
+.lab-status-video-cell video {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  object-fit: cover;
+  display: block;
+}
+
+.lab-video-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--lab-font-mono);
+  font-size: 9px;
+  color: var(--lab-text-muted);
+  text-align: center;
+  padding: 8px;
+  background: var(--lab-panel-2);
+}
+
+.lab-video-fallback.show {
+  display: flex;
+}
+
+/* ==========================================================
+   result.html 専用スタイル(実験成果報告 / 退室)
+   ========================================================== */
+
+.lab-report-stamp {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 14px;
+}
+
+.lab-report-stamp span {
+  border: 1.5px solid var(--lab-accent);
+  color: var(--lab-accent);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 4px 18px;
+  border-radius: 4px;
+  letter-spacing: 1.5px;
+}
+
+.lab-report-id {
+  font-family: var(--lab-font-mono);
+  font-size: 10px;
+  color: var(--lab-text-muted);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.lab-report-id span {
+  color: var(--lab-text);
+}
+
+.lab-result-message {
+  border: 1px solid var(--lab-border);
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 18px;
+  background: var(--lab-panel-2);
+  text-align: center;
+}
+
+.lab-result-message .lab-result-line1 {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.lab-result-message .lab-result-line2 {
+  font-family: var(--lab-font-mono);
+  font-size: 10px;
+  color: var(--lab-text-muted);
+  line-height: 1.6;
+}
+
+.lab-exit-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 6px;
+  color: var(--lab-text);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 10px;
+  letter-spacing: 0.5px;
+}
+
+.lab-exit-btn:not(:disabled):hover {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+}
+
+.lab-exit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lab-exit-note {
+  font-family: var(--lab-font-mono);
+  font-size: 9.5px;
+  color: var(--lab-text-muted);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ---- 左下：温度グラフ ---- */
+
+/* ---- 右上：温度グラフ ---- */
+
+.lab-graph-cell {
+  justify-content: center;
+}
+
+.lab-graph-box {
+  flex-shrink: 0;
+  margin-bottom: 6px;
+}
+
+.lab-graph-box svg {
+  width: 100%;
+  height: 34px;
+  display: block;
+}
+
+.lab-graph-target-line {
+  stroke: var(--lab-border-strong);
+  stroke-width: 0.6;
+  stroke-dasharray: 2 2;
+}
+
+#temp-graph-line {
+  fill: none;
+  stroke: var(--lab-accent);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lab-graph-readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  color: var(--lab-accent);
+  margin-top: 2px;
+}
+
+.lab-graph-readout .lab-graph-target {
+  font-size: 9px;
+  color: var(--lab-text-muted);
+}

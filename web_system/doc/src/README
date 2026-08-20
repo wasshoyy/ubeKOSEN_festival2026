@@ -1,0 +1,61 @@
+更新日：2026/08/14
+
+動作方法
+・menu.htmlを開く
+
+現在の進捗
+・画面遷移と見た目の動きのみ実装（サーバー、DB無し）
+・商品の写真未実装
+・注文番号、席番号は固定。
+・tracking.htmlについて
+　①ロボットの発信ボタンが押されたら「もうすぐ注文が来ます」に変わる仕様にするが、現在は５秒ぐらいたったら自動で変わる仕様
+　②ロボットの帰還ボタンが押されたらresult.htmlに変わる仕様にするが、現在は11秒ぐらいたったら自動で変わる仕様
+　
+
+ファイル構成について
+src/
+├── frontend/
+│   ├── customer/                 # お客さん用(スマホ)
+│   │   ├── menu.html
+│   │   ├── dock_select.html
+│   │   ├── tracking.html
+│   │   └── result.html
+│   ├── kitchen/                  # 厨房デバイス
+│   │   └── kitchen.html
+│   ├── counter/                  # 店頭デバイス
+│   │   └── counter.html
+│   ├── shared/
+│   │   ├── css/
+│   │   │   ├── base.css          # 共通のリセット・フォント・カラー変数
+│   │   │   └── lab-theme.css     # モノスペース/グリッド背景など世界観の共通スタイル
+│   │   ├── js/
+│   │   │   ├── api.js            # サーバーとの通信をまとめる(fetchのラッパー)
+│   │   │   └── components.js     # ステータスバッジ、ログ表示などの共通部品
+│   │   └── images
+│   └── qr/                       # QRコード生成物や案内ポスター素材
+│
+├── backend/
+│   ├── app.py                    # APIサーバーのエントリーポイント
+│   ├── routes/
+│   │   ├── orders.py             # 注文の作成・取得・状態更新
+│   │   ├── seats.py              # 席(ドッキングポイント)の割当・解放
+│   │   ├── menu.py               # 商品一覧・在庫
+│   │   └── robot.py              # ロボットとの通信・ステータス受信
+│   ├── models/
+│   │   ├── order.py
+│   │   ├── seat.py
+│   │   └── menu_item.py
+│   ├── services/
+│   │   ├── seat_allocator.py     # 席自動割当のロジック
+│   │   └── robot_dispatcher.py   # どのロボットにどの注文を割り当てるか
+│   └── db/
+│       ├── schema.sql            # テーブル定義
+│       └── connection.py
+│
+├── robot/                        # ロボット側の制御コード(別リポジトリでも可)
+│   └── (機体との通信・センサー処理はここで管理)
+│
+├── docs/
+│   └── specification.md          # 今回の仕様書
+│
+└── README.md

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>samples.db</title>
+<link rel="stylesheet" href="../shared/css/base.css">
+<link rel="stylesheet" href="../shared/css/lab-theme.css">
+</head>
+<body>
+
+<div class="lab-device">
+  <div class="lab-header">
+    <div class="lab-title">制御科監修スープ研究所</div>
+    <div class="lab-version">LAB-MENU / v1.0</div>
+  </div>
+
+  <div class="lab-grid" id="menu-grid">
+    <!-- カードはJSでmenu.jsから描画する -->
+  </div>
+
+  <button class="lab-next" id="next-btn" disabled>NEXT</button>
+</div>
+
+<!-- 商品詳細モーダル -->
+<div class="lab-modal-overlay" id="modal-overlay">
+  <div class="lab-modal">
+    <div class="lab-modal-head">
+      <span class="lab-modal-title" id="modal-title">【SPL-01】ABCスープ</span>
+      <button class="lab-modal-close" id="modal-close" aria-label="閉じる">&times;</button>
+    </div>
+    <div class="lab-modal-photo" id="modal-photo">写真</div>
+    <div class="lab-modal-row">
+      <span class="lab-modal-price" id="modal-price">&yen;200</span>
+      <div class="lab-qty">
+        <button id="qty-minus" aria-label="個数を減らす">-</button>
+        <span id="qty-value">1</span>
+        <button id="qty-plus" aria-label="個数を増やす">+</button>
+      </div>
+    </div>
+    <button class="lab-choose" id="modal-choose">choose</button>
+  </div>
+</div>
+
+<script src="../shared/js/data.js"></script>
+<script src="../shared/js/menu.js"></script>
+</body>
+</html>

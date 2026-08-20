@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>amu01.log</title>
+<link rel="stylesheet" href="../shared/css/base.css">
+<link rel="stylesheet" href="../shared/css/lab-theme.css">
+</head>
+<body>
+
+<div class="lab-track-shell">
+
+  <div class="lab-track-topbar">
+    <span>TERMINAL / TRACKING</span>
+  </div>
+
+  <div class="lab-track-grid">
+
+    <div class="lab-track-row">
+      <!-- 左上：現在の状況(文字)+動画 -->
+      <div class="lab-track-cell lab-status-video-cell lab-cell-small">
+        <div class="lab-status-mini" id="status-cell">
+          <span class="lab-status-icon-mini" id="status-icon">✓</span>
+          <span class="lab-status-text-mini" id="status-text">注文完了</span>
+        </div>
+        <!--
+        <video id="track-video" autoplay muted loop playsinline>
+          <source src="../shared/images/tracking.mp4" type="video/mp4">
+        </video>
+        <div class="lab-video-fallback" id="video-fallback">
+          MEDIA SLOT<br>tracking.mp4 未配置
+        </div>
+        -->
+      </div>
+
+      <!-- 右上：温度グラフ -->
+      <div class="lab-track-cell lab-graph-cell lab-cell-large">
+        <div class="lab-track-label">TEMP // CONTROL</div>
+        <div class="lab-graph-box">
+          <svg id="temp-graph" viewBox="0 0 200 40" preserveAspectRatio="none">
+            <line x1="0" y1="20" x2="200" y2="20" class="lab-graph-target-line" />
+            <polyline id="temp-graph-line" points="" />
+          </svg>
+          <div class="lab-graph-readout">
+            <span id="temp-current">60.0</span>℃<span class="lab-graph-target">TARGET 60.0℃</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-track-row">
+      <!-- 左下：流れるコード(大きめ・演出のみ) -->
+      <div class="lab-track-cell lab-code-cell lab-cell-large">
+        <div class="lab-track-label">SYS // MONITOR</div>
+        <div class="lab-code-viewport">
+          <div class="lab-code-scroll" id="code-scroll"></div>
+        </div>
+      </div>
+
+      <!-- 右下：注文情報(小さめ) -->
+      <div class="lab-track-cell lab-order-cell lab-cell-small">
+        <div class="lab-track-label">ORDER INFO</div>
+        <div class="lab-order-row"><span>注文番号</span><span id="order-id">-</span></div>
+        <div class="lab-order-row"><span>席番号</span><span id="order-seat">-</span></div>
+        <div class="lab-order-row"><span>金額</span><span id="order-price">-</span></div>
+        <div class="lab-order-row"><span>日時</span><span id="order-time">-</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../shared/js/data.js"></script>
+<script src="../shared/js/tracking.js"></script>
+</body>
+</html>
