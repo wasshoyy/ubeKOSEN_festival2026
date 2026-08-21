@@ -1,13 +1,25 @@
 from pybricks.hubs import PrimeHub
 from pybricks.parameters import Button, Color, Side
-from pybricks.tools import wait, run_task, multitask
+from pybricks.tools import Matrix, wait, run_task, multitask
 from linetrace import linetrace, change_velocity
 from bluetooth import reception
 
 hub = PrimeHub()
 
-hub.system.set_stop_button((Button.LEFT, Button.RIGHT, Button.BLUETOOTH))
+hub.system.set_stop_button((Button.LEFT, Button.RIGHT))
 # hub.system.set_stop_button(None)
+
+hub.display.orientation(Side.LEFT)
+
+SMILE = Matrix(
+    [
+        [0, 100, 0, 100, 0],
+        [0, 100, 0, 100, 0],
+        [0, 0, 0, 0, 0],
+        [100, 0, 0, 0, 100],
+        [0, 100, 100, 100, 0],
+    ]
+)
 
 class State:
     Instruction_wait = 0
@@ -21,6 +33,7 @@ state = State.Instruction_wait
 
 async def main():
     global state
+    hub.display.icon(SMILE)
     while True:
         table_id = 0
         if state == State.Instruction_wait:
@@ -28,7 +41,7 @@ async def main():
             hub.light.on(Color.VIOLET)
 
             response, table_id = await reception()
-            hub.display.number(table_id)
+            # hub.display.number(table_id)
             
             if response == True:
                 state = State.Soup_wait
