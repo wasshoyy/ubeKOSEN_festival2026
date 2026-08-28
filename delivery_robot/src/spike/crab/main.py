@@ -115,4 +115,17 @@ async def linetrace():
 async def main():
     await multitask(linetrace(), check_front_distance())
 
-run_task(main())
+try:
+    run_task(main())
+
+except SystemExit:
+    while True:
+        speed -= 10
+        motor_drive.run(max(0, speed))
+        angle = motor_direction.angle()
+        if angle == 0:
+            break
+        elif angle > 0:
+            motor_direction.run(-30)
+        elif angle < 0:
+            motor_direction.run(30)
