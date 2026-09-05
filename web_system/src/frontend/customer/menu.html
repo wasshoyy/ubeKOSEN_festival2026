@@ -33,9 +33,7 @@
     <div class="lab-modal-row">
       <span class="lab-modal-price" id="modal-price">&yen;200</span>
       <div class="lab-qty">
-        <button id="qty-minus" aria-label="個数を減らす">-</button>
-        <span id="qty-value">1</span>
-        <button id="qty-plus" aria-label="個数を増やす">+</button>
+        <input type="number" id="qty-value" class="lab-qty-input" min="0" value="1" inputmode="numeric">
       </div>
     </div>
     <button class="lab-choose" id="modal-choose">choose</button>

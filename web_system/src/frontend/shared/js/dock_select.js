@@ -1,10 +1,10 @@
 // dock_select.js
 // イートイン/テイクアウト選択・人数入力・注文内容確認画面の動作。
-// menuItems は data.js から、cart は前の画面(menu.js)が sessionStorage に保存したものを読み込む。
 
 const cart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+// menuItems は data.js から、cart は前の画面(menu.js)が sessionStorage に保存したものを読み込む。
 
-let method = null; // "eatin" | "takeout" | null
+let method = null; // イートインか、を保存してるやつ
 let peopleCount = 1;
 
 const optionEls = {
@@ -32,31 +32,34 @@ function renderSummary() {
     totalQty += qty;
     totalPrice += item.price * qty;
 
+    //htmlへの表示(買ったものと量)
     const line = document.createElement("div");
     line.className = "lab-summary-line";
     line.innerHTML = `<span>${item.name}</span><span>${qty}</span>`;
     summaryBox.appendChild(line);
   });
 
+  //区切り
   const divider = document.createElement("div");
   divider.className = "lab-summary-divider";
   summaryBox.appendChild(divider);
 
+  ////htmlへの表示(量と合計)
   const totalRow = document.createElement("div");
   totalRow.className = "lab-summary-total";
   totalRow.innerHTML = `<span>数量：${totalQty}</span><span class="lab-accent-text">合計：¥${totalPrice}</span>`;
   summaryBox.appendChild(totalRow);
 }
 
-// ---- 提供方法の選択(イートイン/テイクアウトは排他選択) ----
+// ---- 提供方法の選択 ----
 function selectMethod(value) {
   method = value;
 
-  optionEls.eatin.classList.toggle("checked", value === "eatin");
-  optionEls.takeout.classList.toggle("checked", value === "takeout");
+  optionEls.eatin.classList.toggle("checked", value === "eatin");//value = eatin の場合：イートインに"checked"を付ける
+  optionEls.takeout.classList.toggle("checked", value === "takeout");//テイクアウトの"checked"を外す
 
-  // イートインの時だけ人数入力を表示する
-  peopleRow.classList.toggle("visible", value === "eatin");
+  // イートインの時だけ人数入力(peopleRow)を表示する
+  peopleRow.classList.toggle("visible", value === "eatin");//value = eatin の場合："visible"を付ける＝表示する
 
   updateConfirmButton();
 }
@@ -90,10 +93,10 @@ document.getElementById("back-btn").addEventListener("click", () => {
 // ---- 注文確定: 提供方法・人数を保存して次の画面(注文完了/トラッキング)へ ----
 confirmBtn.addEventListener("click", () => {
   const orderInfo = {
-    method,
+    method,//method:method
     people: method === "eatin" ? peopleCount : null,
   };
-  sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+  sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));//変換して保存
   console.log("注文情報:", orderInfo, "カート:", cart);
   window.location.href = "tracking.html";
 });

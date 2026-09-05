@@ -1,25 +1,25 @@
 // tracking.js
 // トラッキング画面(注文完了〜配膳待ち)の動作。
-// 右上の注文情報は、前の画面までに sessionStorage へ保存した cart / orderInfo を読み込んで表示する。
-// 左上のステータス切り替え、左下のコード演出はまだロボットと通信していないので、すべて仮の演出。
+// 左上のステータス切り替え：仮の演出。
 
 const cart = JSON.parse(sessionStorage.getItem("cart") || "{}");
 const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo") || "null");
+// 注文情報とかは sessionStorage へ保存した cart / orderInfo を読み込んで表示する。
+
 
 // ---- 右上：注文情報を埋める ----
 function renderOrderInfo() {
   let totalPrice = 0;
   Object.entries(cart).forEach(([itemId, qty]) => {
     const item = menuItems.find((i) => i.id === itemId);
-    if (item) totalPrice += item.price * qty;
+    if (item) totalPrice += item.price * qty;//合計金額
   });
 
-  // 注文番号・席番号はまだサーバー/席自動割当が実装されていないため、
-  // 今はダミー値を表示している。実装後は API から取得した実際の値に差し替える。
-  const orderId = "RQ-0142";
+  // 注文番号・席番号はまだサーバー/席自動割当が実装されてないのでダミー
+  const orderId = "RQ-001";
   document.getElementById("order-id").textContent = orderId;
   document.getElementById("order-seat").textContent =
-    orderInfo && orderInfo.method === "eatin" ? "PT-07" : "テイクアウト";
+    orderInfo && orderInfo.method === "eatin" ? "PT-01" : "テイクアウト";
   document.getElementById("order-price").textContent = `¥${totalPrice}`;
   document.getElementById("order-time").textContent = new Date().toLocaleString("ja-JP", {
     month: "numeric",
@@ -28,14 +28,12 @@ function renderOrderInfo() {
     minute: "2-digit",
   });
 
-  // result.html でも同じ注文番号・金額を表示したいので保存しておく
+  // result.html でも同じ注文番号・金額を表示したいので保存
   sessionStorage.setItem("orderId", orderId);
   sessionStorage.setItem("orderTotal", String(totalPrice));
 }
 
 // ---- 左上：ステータス表示の切り替え ----
-// 本来はロボットからの通信(WebSocketやポーリング)を受けて切り替える部分。
-// 今はまだロボット連携がないので、デモとして一定時間後に自動で切り替えている。
 function setStatus(state) {
   const cell = document.getElementById("status-cell");
   const icon = document.getElementById("status-icon");
@@ -52,20 +50,13 @@ function setStatus(state) {
   }
 }
 
-// デモ用: 5秒後に「ロボットが動き始めた」状態に切り替える
-// 実装時はここを、ロボットからのステータス通知を受け取る処理に置き換える
+// 今は5秒後に「ロボットが動き始めた」状態に切り替える
+// 実装時はここを、ロボットからのステータス通知を受け取る処理に
 setTimeout(() => setStatus("waiting"), 5000);
 
 // ---- ロボットが帰還ボタンを押されたら、この画面もresult.htmlへ切り替える ----
-// 本来の流れ：
-//   1. ロボットが席に到着する
-//   2. お客さんが商品を受け取り、ロボット本体のボタンを押す
-//   3. ロボットがサーバーに「配膳完了・帰還開始」を伝える
-//   4. サーバーの注文ステータスが更新される
-//   5. この画面はサーバーの状態をポーリング(または通知)で検知し、result.htmlへ遷移する
-// 今はまだロボット・サーバー連携が無いので、デモとして一定時間後に自動遷移させている。
-// 実装時はこの setTimeout ごと削除し、ポーリングで受け取ったステータスが
-// "returned"(帰還開始)になった時点で同じ window.location.href を呼ぶ形に置き換える。
+// 今は一定時間後に自動遷移させている。
+// 実装時はこの setTimeout ごと削除し、ポーリングで受け取ったステータスが"returned"(帰還開始)になった時点で同じ window.location.href を呼ぶ形に置き換える。
 setTimeout(() => {
   window.location.href = "result.html";
 }, 11000);
@@ -109,8 +100,7 @@ function buildFakeCode() {
   let lineIndex = 0;
 
   function typeLine() {
-    // 何周でもループし続けるよう、末尾まで行ったら最初の行に戻る
-    const line = lines[lineIndex % lines.length];
+    const line = lines[lineIndex % lines.length];// ループし続けるよう、末尾まで行ったら最初の行に戻る
     lineIndex += 1;
 
     const lineEl = document.createElement("div");
@@ -158,20 +148,11 @@ function buildFakeCode() {
   typeLine();
 }
 
-// ---- 右下：動画が読み込めなかった時だけフォールバック表示を出す ----
-// 動画タグ自体をコメントアウトしている間は video が null になるため、
-// 存在する時だけイベントを登録するようにしている(無いとここでエラーになり、
-// 下の renderOrderInfo などまで巻き込んで止まってしまうため)。
-const video = document.getElementById("track-video");
-const fallback = document.getElementById("video-fallback");
-if (video && fallback) {
-  video.addEventListener("error", () => fallback.classList.add("show"));
-  // ソースファイルがまだ無い場合、videoタグ自体がerrorを出すのでここで検知する
-}
 
 renderOrderInfo();
 buildFakeCode();
 buildTempGraph();
+
 
 // ---- 左下：温度が目標値付近で揺れ続ける折れ線グラフ(演出のみ) ----
 function buildTempGraph() {
@@ -180,35 +161,31 @@ function buildTempGraph() {
   const graphWidth = 200;
   const graphHeight = 40;
 
-  // 最初は全部target(目標値)で埋めておく
+  // 最初は全部target(目標値)で埋めておく、配列
   const readings = new Array(maxPoints).fill(target);
 
   const line = document.getElementById("temp-graph-line");
   const currentEl = document.getElementById("temp-current");
 
   function toPoints() {
-    // 温度の変動幅はだいたい ±3℃ くらいを想定して、グラフの縦の振れ幅に変換する
-    const range = 6; // 表示上、target ± range を縦いっぱいに使う
-    return readings
-      .map((value, i) => {
-        const x = (i / (maxPoints - 1)) * graphWidth;
-        const ratio = (value - (target - range)) / (range * 2); // 0〜1に正規化
+    const range = 6;//+-6
+    return readings.map((value, i) => {
+        const x = (i / (maxPoints - 1)) * graphWidth;//0~200　ｘ番目データをｘ座標に
+        const ratio = (value - (target - range)) / (range * 2); // 温度を0〜1に正規化
         const y = graphHeight - ratio * graphHeight;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
       })
-      .join(" ");
+      .join(" ");//つなぐ
   }
 
-  function tick() {
-    // 直前の値から少しだけランダムに動かす(いきなり大きく飛ばない=制御されている感じ)
-    const last = readings[readings.length - 1];
-    let next = last + (Math.random() - 0.5) * 1.2;
 
-    // 目標値から離れすぎたら、少し引き戻す力を働かせる(制御っぽさのポイント)
-    next += (target - next) * 0.15;
+  function tick() {//メイン
+    const last = readings[readings.length - 1];//latest
+    let next = last + (Math.random() - 0.5) * 1.2;//-0.6~+0.6
+    next += (target - next) * 0.15;//小さければ増える方向へ15%
 
-    readings.push(next);
-    readings.shift();
+    readings.push(next);//新しい温度追加
+    readings.shift();//古いの消す
 
     line.setAttribute("points", toPoints());
     currentEl.textContent = next.toFixed(1);
