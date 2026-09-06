@@ -2,16 +2,19 @@
    色・フォントを変えたくなったら、まずこのファイルの変数だけ触ればよい構成にしている */
 
 :root {
-  --lab-bg: #0f1210;
-  --lab-panel: #171b19;
-  --lab-panel-2: #1e2321;
-  --lab-border: #33403a;
-  --lab-border-strong: #4a5a52;
-  --lab-accent: #4fd1a5;
-  --lab-accent-dim: rgba(79, 209, 165, 0.12);
-  --lab-text: #e6e8e3;
-  --lab-text-muted: #8a9490;
+  --lab-bg: #0a0f1a;
+  --lab-panel: #101827;
+  --lab-panel-2: #16213a;
+  --lab-border: #24344a;
+  --lab-border-strong: #37506e;
+  --lab-accent: #3ec6ff;
+  --lab-accent-2: #4338ca;
+  --lab-accent-dim: rgba(62, 198, 255, 0.14);
+  --lab-text: #e4edf7;
+  --lab-text-muted: #7f93ac;
   --lab-warning: #e0b34f;
+  --lab-on-accent: #ffffff;
+  --lab-shadow: 0 8px 24px rgba(62, 198, 255, 0.12), 0 1px 2px rgba(0, 0, 0, 0.4);
   --lab-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
@@ -22,6 +25,7 @@
   border-radius: 10px;
   padding: 16px;
   position: relative;
+  box-shadow: var(--lab-shadow);
   background-image:
     linear-gradient(var(--lab-border) 0.5px, transparent 0.5px),
     linear-gradient(90deg, var(--lab-border) 0.5px, transparent 0.5px);
@@ -232,14 +236,31 @@
   font-family: var(--lab-font-mono);
 }
 
-.lab-qty button {
-  background: none;
+.lab-qty-input {
+  background: var(--lab-panel-2);
   border: 1px solid var(--lab-border-strong);
   border-radius: 4px;
   color: var(--lab-text);
-  width: 26px;
-  height: 26px;
-  font-size: 14px;
+  width: 52px;
+  height: 28px;
+  text-align: center;
+  font-family: var(--lab-font-mono);
+  font-size: 13px;
+}
+
+.lab-qty-input:focus {
+  outline: none;
+  border-color: var(--lab-accent);
+}
+
+/* Chrome/Safariのスピンボタン(上下の矢印)を消して、数字だけのシンプルな見た目にする */
+.lab-qty-input::-webkit-outer-spin-button,
+.lab-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.lab-qty-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .lab-qty span {
@@ -250,8 +271,8 @@
 
 .lab-choose {
   width: 100%;
-  background: var(--lab-accent);
-  color: #04342c;
+  background: linear-gradient(135deg, var(--lab-accent), var(--lab-accent-2));
+  color: var(--lab-on-accent);
   border: none;
   border-radius: 6px;
   font-family: var(--lab-font-mono);
@@ -468,7 +489,7 @@
   content: "";
   width: 8px;
   height: 8px;
-  background: #04342c;
+  background: var(--lab-on-accent);
   border-radius: 1px;
 }
 
@@ -683,8 +704,8 @@
 
 .lab-confirm {
   width: 100%;
-  background: var(--lab-accent);
-  color: #04342c;
+  background: linear-gradient(135deg, var(--lab-accent), var(--lab-accent-2));
+  color: var(--lab-on-accent);
   border: none;
   border-radius: 6px;
   font-family: var(--lab-font-mono);
@@ -706,11 +727,15 @@
 
 .lab-track-shell {
   width: 320px;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
   background: var(--lab-panel);
   border: 1px solid var(--lab-border-strong);
   border-radius: 10px;
   padding: 14px;
   position: relative;
+  box-shadow: var(--lab-shadow);
   background-image:
     linear-gradient(var(--lab-border) 0.5px, transparent 0.5px),
     linear-gradient(90deg, var(--lab-border) 0.5px, transparent 0.5px);
@@ -718,6 +743,7 @@
 }
 
 .lab-track-topbar {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -732,20 +758,24 @@
 /* ---- 2x2グリッド ---- */
 
 .lab-track-grid {
+  flex: 1; /* topbarの分を除いた、残りの高さを全部使う */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .lab-track-row {
+  flex: 1; /* 2つの行で、上のgridの高さを均等に分け合う */
+  min-height: 0;
   display: flex;
   gap: 8px;
-  height: 110px;
 }
 
 .lab-track-cell {
   flex: 1; /* 行の中では、指定が無ければ均等に幅を分け合う */
   min-width: 0; /* 中身(動画など)の実際のサイズに幅を引っ張られないようにする */
+  min-height: 0; /* 縦方向も同様に、中身のサイズに高さを引っ張られないようにする */
   border: 1px solid var(--lab-border);
   border-radius: 6px;
   background: var(--lab-panel-2);
@@ -1026,4 +1056,205 @@
 .lab-graph-readout .lab-graph-target {
   font-size: 9px;
   color: var(--lab-text-muted);
+}
+
+/* ==========================================================
+   店頭デバイス(counter.html / products.html)専用スタイル
+   スマホより広い、タブレット/PC想定の横長パネル
+   ========================================================== */
+
+.lab-counter-shell {
+  width: 460px;
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--lab-shadow);
+  background-image:
+    linear-gradient(var(--lab-border) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, var(--lab-border) 0.5px, transparent 0.5px);
+  background-size: 14px 14px;
+}
+
+.lab-counter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--lab-border-strong);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.lab-counter-header .lab-title {
+  font-size: 14px;
+}
+
+.lab-counter-link-btn {
+  background: transparent;
+  border: 1px solid var(--lab-border-accent, var(--lab-accent));
+  color: var(--lab-accent);
+  font-family: var(--lab-font-mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.lab-counter-link-btn:hover {
+  background: var(--lab-accent-dim);
+}
+
+/* ---- テーブル ---- */
+
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--lab-border-strong);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+}
+
+.lab-table th {
+  text-align: left;
+  color: var(--lab-text-muted);
+  font-weight: normal;
+  font-size: 10.5px;
+  padding: 6px 8px;
+  border: 1px solid var(--lab-border-strong);
+  background: var(--lab-panel-2);
+}
+
+.lab-table td {
+  padding: 8px;
+  border: 1px solid var(--lab-border);
+  color: var(--lab-text);
+}
+
+.lab-table .lab-table-empty td {
+  color: var(--lab-text-muted);
+  text-align: center;
+  padding: 20px 8px;
+}
+
+/* 編集モード時の入力欄 */
+.lab-table-input {
+  width: 70px;
+  background: var(--lab-panel-2);
+  border: 1px solid var(--lab-border-strong);
+  border-radius: 4px;
+  color: var(--lab-text);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 3px 6px;
+}
+
+.lab-table-input:focus {
+  outline: none;
+  border-color: var(--lab-accent);
+}
+
+/* ---- 編集確認モーダル(既存の lab-modal を流用しつつ、ボタン2つ用に追加) ---- */
+
+.lab-confirm-modal-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.lab-confirm-modal-buttons button {
+  flex: 1;
+  padding: 9px;
+  border-radius: 6px;
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+}
+
+.lab-confirm-modal-buttons .lab-confirm-yes {
+  background: linear-gradient(135deg, var(--lab-accent), var(--lab-accent-2));
+  color: var(--lab-on-accent);
+  border: none;
+}
+
+.lab-confirm-modal-buttons .lab-confirm-no {
+  background: transparent;
+  border: 1px solid var(--lab-border-strong);
+  color: var(--lab-text);
+}
+
+/* ---- 厨房デバイス：状態ボタン(未/済) ---- */
+
+.lab-status-btn {
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--lab-border-strong);
+  background: transparent;
+  color: var(--lab-text-muted);
+}
+
+.lab-status-btn:hover {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+}
+
+.lab-status-btn.done {
+  background: linear-gradient(135deg, var(--lab-accent), var(--lab-accent-2));
+  border: none;
+  color: var(--lab-on-accent);
+}
+
+
+
+/* management画面*/
+.management-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--lab-border-strong);
+  font-family: var(--lab-font-mono);
+  font-size: 12px;
+}
+
+.management-table th {
+  text-align: left;
+  color: var(--lab-text-muted);
+  font-weight: normal;
+  font-size: 10.5px;
+  padding: 6px 8px;
+  border: 1px solid var(--lab-border-strong);
+  background: var(--lab-panel-2);
+}
+
+.management-table td {
+  padding: 8px;
+  border: 1px solid var(--lab-border);
+  color: var(--lab-text);
+}
+
+.management-table .management-table-empty td {
+  color: var(--lab-text-muted);
+  text-align: center;
+  padding: 20px 8px;
+}
+
+
+
+.lab-conn-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--lab-text-muted);
+  margin-right: 6px;
+}
+
+.lab-conn-dot.connected {
+  background: var(--lab-accent);
+  border-color: var(--lab-accent);
+}
+
+/* 未接続時、命令ボタンを押せない見た目にする */
+.lab-status-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

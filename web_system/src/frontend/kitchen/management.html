@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>robots.db</title>
+<link rel="stylesheet" href="../shared/css/base.css">
+<link rel="stylesheet" href="../shared/css/lab-theme.css">
+</head>
+<body>
+
+<div class="lab-counter-shell">
+  <div class="lab-counter-header">
+    <div class="lab-title">ロボット管理</div>
+  </div>
+
+  <table class="lab-table">
+    <thead>
+      <tr>
+        <th>名前</th>
+        <th>接続</th>
+        <th>状態</th>
+        <th>命令</th>
+      </tr>
+    </thead>
+    <tbody id="management-table-body">
+    </tbody>
+  </table>
+</div>
+
+<script src="../shared/js/robots-store.js"></script>
+<script src="../shared/js/management.js"></script>
+</body>
+</html>

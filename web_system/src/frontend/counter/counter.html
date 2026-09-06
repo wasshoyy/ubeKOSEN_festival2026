@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ledger.db</title>
+<link rel="stylesheet" href="../shared/css/base.css">
+<link rel="stylesheet" href="../shared/css/lab-theme.css">
+</head>
+<body>
+
+<div class="lab-counter-shell">
+  <div class="lab-counter-header">
+    <div class="lab-title">店頭デバイス</div>
+    <a class="lab-counter-link-btn" href="products.html">商品管理</a>
+  </div>
+
+  <table class="lab-table">
+    <thead>
+      <tr>
+        <th>注文番号</th>
+        <th>注文内容</th>
+        <th>金額</th>
+      </tr>
+    </thead>
+    <tbody id="order-table-body">
+      <!-- 注文行はJSでcounter.jsから描画する -->
+    </tbody>
+  </table>
+</div>
+
+<script src="../shared/js/orders-store.js"></script>
+<script src="../shared/js/counter.js"></script>
+</body>
+</html>
