@@ -6,20 +6,20 @@ from pybricks.tools import wait, StopWatch, run_task, multitask
 
 hub = PrimeHub()
 
-motor_drive = Motor(Port.A)
-motor_direction = Motor(Port.C)
-ultrasonic_sensor = UltrasonicSensor(Port.D)
-color_sesor = ColorSensor(Port.B)
+motor_drive = Motor(Port.C)
+motor_direction = Motor(Port.D)
+ultrasonic_sensor = UltrasonicSensor(Port.F)
+color_sesor = ColorSensor(Port.E)
 
 angle_max = 120
 angle_min = -180
-SPEED_MAX = 400
+SPEED_MAX = 200
 speed = SPEED_MAX
 target_angle = 0
-p_gain = 0.6
-i_gain = 0.2
-d_gain = 40.0
-angle_delta_max = 3
+p_gain = 0.4
+i_gain = 0.05
+d_gain = 0.02
+angle_delta_max = 1000
 black = 20.0
 white = 60.0
 target_reflection = (black + white) / 2.0
@@ -62,8 +62,8 @@ async def init():
     motor_direction.reset_angle(0)
 
     await wait(10)
-    angle_min = (await motor_direction.run_until_stalled(-100))
-    angle_max = (await motor_direction.run_until_stalled(100))
+    angle_min = -90
+    angle_max = 90
     await motor_direction.run_target(100, 0, then=Stop.HOLD, wait=True)
     await wait(10)
 
