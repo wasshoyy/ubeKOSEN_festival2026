@@ -3,6 +3,7 @@ from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSenso
 from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, run_task, multitask
+from BLEradio1 import get_state, reception
 
 hub = PrimeHub()
 
@@ -73,6 +74,11 @@ async def linetrace():
     ref_total = 0
     angle = 0
     while True:
+        if get_state():
+            while get_state():
+                motor_drive.run(0)
+                await wait(100)
+        
         await wait(1)
         # print(motor_direction.angle())
 
@@ -113,12 +119,13 @@ async def linetrace():
         motor_drive.run(speed)
 
 async def main():
-    await multitask(linetrace(), check_front_distance())
+    await multitask(reception(), linetrace(), check_front_distance())
 
 try:
     run_task(main())
 
 except SystemExit:
+    # 3秒以内を目指す
     while True:
         speed -= 10
         motor_drive.run(max(0, speed))
@@ -126,6 +133,7 @@ except SystemExit:
         if angle == 0:
             break
         elif angle > 0:
-            motor_direction.run(-30)
+            motor_direction.run(-100)
         elif angle < 0:
-            motor_direction.run(30)
+            motor_direction.run(100)
+        

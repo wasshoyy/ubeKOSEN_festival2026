@@ -2,7 +2,7 @@ from pybricks.hubs import PrimeHub
 from pybricks.parameters import Button, Color, Side
 from pybricks.tools import Matrix, wait, run_task, multitask
 from linetrace import linetrace, change_velocity
-from bluetooth import reception
+from BLEradio0 import reception
 
 hub = PrimeHub()
 
@@ -34,6 +34,9 @@ state = State.Instruction_wait
 async def main():
     global state
     hub.display.icon(SMILE)
+    
+    await multitask(reception(), change_velocity(), linetrace())
+    """
     while True:
         table_id = 0
         if state == State.Instruction_wait:
@@ -79,5 +82,6 @@ async def main():
             await multitask(change_velocity(), linetrace())
             
             state = State.Instruction_wait
+    """
 
 run_task(main())
