@@ -4,8 +4,8 @@ const ROBOTS_KEY = "robots";
 
 // 初期状態
 const DEFAULT_ROBOTS = [
-  { id: "0", name: "０号機", connected: true, running: false },
-  { id: "1", name: "１号機", connected: true, running: false },
+  { id: "0", name: "０号機", connected: false, running: false },
+  { id: "1", name: "１号機", connected: false, running: false },
 ];
 
 async function getRobots() {
@@ -28,11 +28,12 @@ async function getRobots() {
   states.forEach((state, robotId) => {
     const robot = saved.find((r) => r.id === String(robotId));
 
-    console.log("found robot: ", robot);   
-    console.log("state: ", state);
+    console.log("found robot:", robot);   
+    console.log("state:", state);
 
     if(robot){
-      robot.running = state;
+      robot.connected = state[0];
+      robot.running = state[1];
     }
   });
 

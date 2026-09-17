@@ -9,7 +9,9 @@ PYBRICKS_COMMAND_EVENT_CHAR_UUID = (
 
 HUB_NAME = "command_center"
 
-spike_states = [False for _ in range(2)]
+SPIKE_NUM = 2
+# 各SPIKEの[connected, running]
+spike_states = [[False, False] for _ in range(SPIKE_NUM)]
 
 command_queue = asyncio.Queue()
 
@@ -37,7 +39,7 @@ async def communication_loop():
 
         rx_buffer.extend(payload)
 
-        while len(rx_buffer) >= 3:
+        while len(rx_buffer) >= 4:
             if rx_buffer[0] == 200:
                 result_event.set()
                 del rx_buffer[0]
@@ -83,19 +85,21 @@ async def communication_loop():
                     print("No response")
                     continue
 
-                print("catched response: ", rx_buffer[:2])
+                print("catched response:", rx_buffer[:3])
                 spike_id = rx_buffer[0]
-                state = rx_buffer[1]
+                connected = True if rx_buffer[1] == 1 else False
+                state = rx_buffer[2]
 
                 my_stop = True if state & 1 == 1 else False
                 all_stop = True if state & 2 == 2 else False
 
-                # 走行中であればTrue, 停止中ならFalse
-                spike_states[spike_id] = not (my_stop or all_stop)
+                running = not (my_stop or all_stop)
 
-                print("spike_id: ", spike_id, "running: ", spike_states[spike_id])
+                spike_states[spike_id] = [connected, running]
+
+                print("spike_id:", spike_id, "connected:", connected, "running:", running)
                 result_event.clear()
-                del rx_buffer[:2]
+                del rx_buffer[:3]
 
                 await asyncio.sleep(0.1)
 
