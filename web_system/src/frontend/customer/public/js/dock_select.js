@@ -1,8 +1,35 @@
 // dock_select.js
 // イートイン/テイクアウト選択・人数入力・注文内容確認画面の動作。
 
+
+// menuItems API
+let menuItems = [];
+async function request(url, options) {
+  const response = await fetch(url, options);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(response.status + ": " + data.error);
+  }
+
+  return data;
+}
+async function loadMenu() {
+  menuItems = await request("/api/customer/menu");
+
+  console.log("menuItems:", menuItems);
+
+  renderSummary();
+}
+
+loadMenu();
+
+
+
+
+// cart は前の画面(menu.js)が sessionStorage に保存したものを読み込む。
 const cart = JSON.parse(sessionStorage.getItem("cart") || "{}");
-// menuItems は data.js から、cart は前の画面(menu.js)が sessionStorage に保存したものを読み込む。
+
 
 let method = null; // イートインか、を保存してるやつ
 let peopleCount = 1;
@@ -17,25 +44,34 @@ const peopleValueEl = document.getElementById("people-value");
 const summaryBox = document.getElementById("summary-box");
 const confirmBtn = document.getElementById("confirm-btn");
 
+
+
+
 // ---- 注文内容の要約を描画する(カートの中身 + 合計) ----
 function renderSummary() {
   summaryBox.innerHTML = "";
 
   let totalQty = 0;
   let totalPrice = 0;
-
+  
   Object.entries(cart).forEach(([itemId, qty]) => {
     if (qty <= 0) return;
-    const item = menuItems.find((i) => i.id === itemId);
+    
+    const item = menuItems.find((i) => i.item_id === Number(itemId));
     if (!item) return;
-
+    
     totalQty += qty;
     totalPrice += item.price * qty;
-
-    //htmlへの表示(買ったものと量)
+    
     const line = document.createElement("div");
     line.className = "lab-summary-line";
-    line.innerHTML = `<span>${item.name}</span><span>${qty}</span>`;
+
+    //htmlへの表示(買ったものと量)
+    line.innerHTML = `
+      <span>${item.item_name}</span>
+      <span>${qty}</span>
+    `;
+    
     summaryBox.appendChild(line);
   });
 
@@ -90,15 +126,35 @@ document.getElementById("back-btn").addEventListener("click", () => {
   window.location.href = "menu.html";
 });
 
+
+
 // ---- 注文確定: 提供方法・人数を保存して次の画面(注文完了/トラッキング)へ ----
-confirmBtn.addEventListener("click", () => {
+confirmBtn.addEventListener("click", async() => {
   const orderInfo = {
     method,//method:method
     people: method === "eatin" ? peopleCount : null,
   };
   sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));//変換して保存
+
+  //POST　API
+  try {
+    await request('/api/customer/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:  JSON.stringify({
+        order_type: method,
+        people: method === "eatin" ? peopleCount : null, 
+        cart: cart 
+      })
+    });
+  } catch(err){
+    console.error(err);
+    return;
+  }
+
   console.log("注文情報:", orderInfo, "カート:", cart);
   window.location.href = "tracking.html";
 });
+
 
 renderSummary();

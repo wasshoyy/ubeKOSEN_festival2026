@@ -1,0 +1,14 @@
+services: #Dockerで動かすサービス（コンテナ）をここに書くよ
+  postgres: #サービスの名前
+    image: postgres:18 #PostgreSQL 18のDockerイメージを使って、このサービスを作る
+    ports:
+     - "5432:5432"
+    environment: #設定値の受け渡し
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} #パスワード保存
+      PGDATA: /var/lib/postgresql/data/pgdata #どこにDBデータをどこに保存するか
+    volumes: #volumes：データを永続化できるように、コンテナの外にデータを置く場所
+      - ./db:/db #init.sqlなどのSQLファイルをコンテナから見えるようにする
+      - postgres_data:/var/lib/postgresql/data #永続化
+          
+volumes:
+  postgres_data:
