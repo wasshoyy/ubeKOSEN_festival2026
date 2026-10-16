@@ -5,12 +5,15 @@ from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, run_task, multitask
 from BLEradio1 import get_state, reception
 
-hub = PrimeHub()
-
 motor_drive = Motor(Port.A)
 motor_direction = Motor(Port.C)
-ultrasonic_sensor = UltrasonicSensor(Port.D)
-color_sesor = ColorSensor(Port.B)
+color_sesor = ColorSensor(Port.E)
+
+running = False
+
+def run(tf):
+    global running
+    running = tf
 
 angle_max = 120
 angle_min = -180
@@ -20,6 +23,8 @@ target_angle = 0
 p_gain = 0.6
 i_gain = 0.2
 d_gain = 40.0
+brake_gain = 100
+brake_delta = 1
 angle_delta_max = 3
 black = 20.0
 white = 60.0
@@ -44,19 +49,6 @@ def ringbuff_get(idx_offset):
     idx = (ringbuff_idx + idx_offset + RINGBUFF_MAX) % RINGBUFF_MAX
     return ringbuff[idx]
 
-distance_max = 300
-distance_min = 100
-# course_length = 4600
-
-async def check_front_distance():
-    global speed
-    # distance_old = 0
-    while True:
-        await wait(10)
-        distance_now = max(distance_min, min(distance_max, await ultrasonic_sensor.distance()))
-        speed = SPEED_MAX * (distance_now - distance_min) / (distance_max - distance_min)
-        # distance_old = distance_now
-
 async def init():
     ringbuff_init()
     global angle_min, angle_max
@@ -65,26 +57,44 @@ async def init():
     await wait(10)
     angle_min = (await motor_direction.run_until_stalled(-100))
     angle_max = (await motor_direction.run_until_stalled(100))
-    await motor_direction.run_target(100, 0, then=Stop.HOLD, wait=True)
+
+    zero_angle = ((angle_min + 73) + (angle_max - 55)) / 2
+    await motor_direction.run_target(100, zero_angle, then=Stop.HOLD, wait=True)
+    await wait(10)
+    motor_direction.reset_angle(0)
     await wait(10)
 
+target_length = 6150
+def set_target_length(length):
+    global target_length
+    target_length = length
+
+mileage = 0.0
+def reset_mileage():
+    global mileage
+    mileage = 0.0
+
+def get_mileage():
+    return mileage
+
 async def linetrace():
+    global speed, mileage, running
     await init()
     ref_old = 0
     ref_total = 0
     angle = 0
+    brake_now = 0
+    drive_angle_old = 0
     while True:
-        if get_state():
-            while get_state():
-                motor_drive.run(0)
-                await wait(100)
+        while get_state():
+            motor_drive.run(0)
+            await wait(100)
         
         await wait(1)
         # print(motor_direction.angle())
 
         hsv = await color_sesor.hsv()
         reflection = float(hsv.v)
-        d = ultrasonic_sensor.distance()
 
         # black <= reflection <= white
         reflection = max(black, min(white, reflection))
@@ -115,16 +125,29 @@ async def linetrace():
         # delta_angle = target_angle - motor_direction.angle()
         motor_direction.track_target(angle)
 
-        # motor_drive.run(speed - brake_now)
-        motor_drive.run(speed)
 
-async def main():
-    await multitask(reception(), linetrace(), check_front_distance())
+        if running:
+            speed += min(5, max(-5, SPEED_MAX - speed))
+        else:
+            speed -= min(5, max(-5, speed))
 
-try:
-    run_task(main())
+        brake = brake_gain * abs(ref_now)
+        brake_now += max(- brake_delta, min(brake_delta, brake - brake_now))
 
-except SystemExit:
+        if speed - brake_now > 0:
+            motor_drive.run(speed - brake_now)
+        else:
+            motor_drive.run(0)
+        # motor_drive.run(speed)
+
+        drive_angle_now = motor_drive.angle()
+        mileage += drive_angle_now - drive_angle_old
+        drive_angle_old = drive_angle_now
+        if mileage >= target_length:
+            running = False
+
+def exit():
+    global speed
     # 3秒以内を目指す
     while True:
         speed -= 10
@@ -136,4 +159,3 @@ except SystemExit:
             motor_direction.run(-100)
         elif angle < 0:
             motor_direction.run(100)
-        

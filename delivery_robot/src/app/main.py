@@ -47,4 +47,4 @@ async def get_states():
 
 @app.post("/api/command")
 async def commandRobot(command: RobotCommand):
-    await spike_ble.addCommand(command.robot_id, command.stop)
+    spike_ble.addCommand(command.robot_id, command.stop)
