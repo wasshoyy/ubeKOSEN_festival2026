@@ -7,15 +7,37 @@ CREATE TABLE IF NOT EXISTS item
     PRIMARY KEY (item_id)
 );
 
+CREATE TABLE IF NOT EXISTS  seat
+(
+    seat_id INT,
+    capacity INT NOT NULL,
+    PRIMARY KEY (seat_id)
+);
+
 CREATE TABLE IF NOT EXISTS orders
 (
     order_id INT GENERATED ALWAYS AS IDENTITY,
+    seat_id INT,
     people INT,
-    order_type VARCHAR(45) NOT NULL,
+    order_type VARCHAR(20) NOT NULL,
+    CHECK (order_type IN ('EAT_IN', 'TAKE_OUT')),
+    CHECK (people IS NULL OR people >= 1),
+    CHECK (
+        (order_type = 'EAT_IN'
+            AND seat_id IS NOT NULL
+            AND people IS NOT NULL)
+        OR
+        (order_type = 'TAKE_OUT'
+            AND seat_id IS NULL
+            AND people IS NULL)
+    ),
     total_price INT NOT NULL,
     order_status VARCHAR(45) NOT NULL,
     order_time timestamptz NOT NULL DEFAULT now(),
-    PRIMARY KEY (order_id)
+    seat_released_at timestamptz,
+    PRIMARY KEY (order_id),
+    FOREIGN KEY (seat_id)
+        REFERENCES seat(seat_id)
 );
 
 CREATE TABLE IF NOT EXISTS sessions
@@ -45,17 +67,6 @@ CREATE TABLE IF NOT EXISTS order_item
 );
 
 
-CREATE TABLE IF NOT EXISTS  seat
-(
-    seat_id INT,
-    seat_status VARCHAR(45) NOT NULL,
-    current_order_id INT,
-    PRIMARY KEY (seat_id),
-    FOREIGN KEY (current_order_id)
-        REFERENCES orders(order_id),
-    UNIQUE (current_order_id)
-);
-
 CREATE TABLE IF NOT EXISTS robot
 (
     robot_id INT,
@@ -64,10 +75,11 @@ CREATE TABLE IF NOT EXISTS robot
     PRIMARY KEY (robot_id)
 );
 
+
 CREATE TABLE IF NOT EXISTS delivery_tasks
 (
     delivery_tasks_id INT GENERATED ALWAYS AS IDENTITY,
-    order_item_id INT,
+    order_item_id INT UNIQUE,
     robot_id INT,
     cook_status VARCHAR(45) NOT NULL,
     delivery_status VARCHAR(45) NOT NULL,

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ledger.db</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/lab-theme.css">
+</head>
+<body>
+
+<div class="lab-counter-shell">
+  <div class="lab-counter-header">
+    <div class="lab-title">店頭デバイス</div>
+  </div>
+
+  <table class="lab-table">
+    <thead>
+      <tr>
+        <th>席番号</th>
+        <th>現在の利用人数</th>
+      </tr>
+    </thead>
+    <tbody id="order-table-body">
+      <!-- 注文行はJSでcounter.jsから描画する -->
+    </tbody>
+  </table>
+
+</div>
+
+<script src="/js/seat.js"></script>
+</body>
+</html>

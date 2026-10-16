@@ -1258,3 +1258,12 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+
+.lab-payment-message {
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 10px 0 16px;
+  color: var(--lab-text);
+}

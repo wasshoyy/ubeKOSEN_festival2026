@@ -1,10 +1,9 @@
 // tracking.js
 // トラッキング画面(注文完了〜配膳待ち)の動作。
-// 左上のステータス切り替え：仮の演出。
 
 const cart = JSON.parse(sessionStorage.getItem("cart") || "{}");
 const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo") || "null");
-// 注文情報とかは sessionStorage へ保存した cart / orderInfo を読み込んで表示する。
+const orderId = sessionStorage.getItem("orderId");
 
 
 // ---- 右上：注文情報を埋める ----
@@ -16,8 +15,7 @@ function renderOrderInfo() {
   });
 
   // 注文番号・席番号はまだサーバー/席自動割当が実装されてないのでダミー
-  const orderId = "RQ-001";
-  document.getElementById("order-id").textContent = orderId;
+  document.getElementById("order-id").textContent = orderId ?? "未設定";
   document.getElementById("order-seat").textContent =
     orderInfo && orderInfo.method === "eatin" ? "PT-01" : "テイクアウト";
   document.getElementById("order-price").textContent = `¥${totalPrice}`;
@@ -29,7 +27,6 @@ function renderOrderInfo() {
   });
 
   // result.html でも同じ注文番号・金額を表示したいので保存
-  sessionStorage.setItem("orderId", orderId);
   sessionStorage.setItem("orderTotal", String(totalPrice));
 }
 
@@ -50,16 +47,50 @@ function setStatus(state) {
   }
 }
 
-// 今は5秒後に「ロボットが動き始めた」状態に切り替える
-// 実装時はここを、ロボットからのステータス通知を受け取る処理に
-setTimeout(() => setStatus("waiting"), 5000);
+
+const eventSource = new EventSource("/api/staff/delivery-events");
+
+eventSource.onmessage = (event) => {
+  const order = JSON.parse(event.data);
+
+  if (
+    order.event_type === "deliverted" &&
+    Number(order.order_id) === Number(orderId)
+  ) {
+    eventSource.close();
+
+    // すべての商品が配達済みになった
+    setStatus("completed");
+  }
+};
+
+eventSource.onerror = (error) => {
+  console.error("配達完了の通知でエラーが発生しました:", error);
+};
+
+eventSource.onmessage = (event) => {
+  const order = JSON.parse(event.data);
+
+  if (
+    order.event_type === "deliverted" &&
+    Number(order.order_id) === Number(sessionStorage.getItem("orderId"))
+  ) {
+    eventSource.close();
+    setStatus("waiting");
+  }
+};
+
+
 
 // ---- ロボットが帰還ボタンを押されたら、この画面もresult.htmlへ切り替える ----
-// 今は一定時間後に自動遷移させている。
-// 実装時はこの setTimeout ごと削除し、ポーリングで受け取ったステータスが"returned"(帰還開始)になった時点で同じ window.location.href を呼ぶ形に置き換える。
+// 今は一定時間後に自動遷移
 setTimeout(() => {
   window.location.href = "result.html";
-}, 11000);
+}, 
+//11000);
+110000000);
+
+
 
 // ---- 左下：タイプされていく、意味のないコード演出 ----
 function buildFakeCode() {

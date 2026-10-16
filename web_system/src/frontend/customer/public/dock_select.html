@@ -10,42 +10,55 @@
 <body>
 
 <div class="lab-device">
-
-  <div class="lab-header-row">
-    <button class="lab-back-btn" id="back-btn">←</button>
-    <div class="lab-title">制御科監修スープ研究所</div>
-  </div>
-
-  <div class="lab-section-label">提供方法</div>
-
-  <div class="lab-option-row" id="option-eatin" data-value="eatin">
-    <div class="lab-option-box"><span class="check-mark"></span></div>
-    <span class="lab-option-label">イートイン</span>
-  </div>
-
-  <!-- イートインを選んだ時だけ表示する人数入力 -->
-  <div class="lab-people-row" id="people-row">
-    <span class="lab-people-label">人数</span>
-    <div class="lab-qty">
-      <button id="people-minus" aria-label="人数を減らす">-</button>
-      <span id="people-value">1</span>
-      <button id="people-plus" aria-label="人数を増やす">+</button>
-    </div>
-  </div>
   
-  <div class="lab-option-row" id="option-takeout" data-value="takeout">
-    <div class="lab-option-box"><span class="check-mark"></span></div>
-    <span class="lab-option-label">テイクアウト</span>
+  <div id="order-form">
+    <div class="lab-header-row">
+      <button class="lab-back-btn" id="back-btn">←</button>
+      <div class="lab-title">制御科監修スープ研究所</div>
+    </div>
+
+  
+    <div class="lab-section-label">提供方法</div>
+
+    <div class="lab-option-row" id="option-eatin" data-value="eatin">
+      <div class="lab-option-box"><span class="check-mark"></span></div>
+      <span class="lab-option-label">イートイン</span>
+    </div>
+
+    <!-- イートインを選んだ時だけ表示する人数入力 -->
+    <div class="lab-people-row" id="people-row">
+      <span class="lab-people-label">人数</span>
+      <div class="lab-qty">
+        <button id="people-minus" aria-label="人数を減らす">-</button>
+        <span id="people-value">1</span>
+        <button id="people-plus" aria-label="人数を増やす">+</button>
+      </div>
+    </div>
+    
+    <div class="lab-option-row" id="option-takeout" data-value="takeout">
+      <div class="lab-option-box"><span class="check-mark"></span></div>
+      <span class="lab-option-label">テイクアウト</span>
+    </div>
+
+
+
+    <div class="lab-section-label">注文内容</div>
+
+    <div class="lab-summary-box" id="summary-box">
+    </div>
+
+    <button class="lab-confirm" id="confirm-btn" disabled>注文確定</button>
+
   </div>
 
-
-
-  <div class="lab-section-label">注文内容</div>
-
-  <div class="lab-summary-box" id="summary-box">
+  <!-- 注文確定後に表示する、お支払い案内。最初は非表示 -->
+  <div id="payment-view" style="display:none;">
+    <p class="lab-payment-message">お近くの研究員にて、<br>お支払いしてください</p>
+    <table class="lab-table" id="payment-table">
+      <!-- 行はJSでdock_select.jsから描画する -->
+    </table>
   </div>
 
-  <button class="lab-confirm" id="confirm-btn" disabled>注文確定</button>
 
 </div>
 

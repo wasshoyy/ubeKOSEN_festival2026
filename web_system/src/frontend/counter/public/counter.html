@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ledger.db</title>
-<link rel="stylesheet" href="../shared/css/base.css">
-<link rel="stylesheet" href="../shared/css/lab-theme.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/lab-theme.css">
 </head>
 <body>
 
@@ -19,17 +19,26 @@
     <thead>
       <tr>
         <th>注文番号</th>
+        <th>席番号</th>
         <th>注文内容</th>
         <th>金額</th>
+        <th>購入時間</th>
+        <th>支払い</th>
       </tr>
     </thead>
     <tbody id="order-table-body">
       <!-- 注文行はJSでcounter.jsから描画する -->
     </tbody>
   </table>
+
+  <div class="pagination">
+    <button id="prev-page">前へ</button>
+    <span id="page-info"></span>
+    <button id="next-page">次へ</button>
+  </div>
 </div>
 
-<script src="../shared/js/orders-store.js"></script>
-<script src="../shared/js/counter.js"></script>
+<script src="/js/orders-store.js"></script>
+<script src="/js/counter.js"></script>
 </body>
 </html>
