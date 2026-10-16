@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>lab_console.log</title>
-<link rel="stylesheet" href="../shared/css/base.css">
-<link rel="stylesheet" href="../shared/css/lab-theme.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/lab-theme.css">
 </head>
 <body>
 
@@ -20,16 +20,21 @@
         <th>注文番号</th>
         <th>注文内容</th>
         <th>ロボ</th>
-        <th>状態</th>
+        <th>調理状態</th>
+        <th>配達状態</th>
       </tr>
     </thead>
     <tbody id="kitchen-table-body">
       <!-- 行はJSでkitchen.jsから描画する -->
     </tbody>
   </table>
+    <div class="kitchen-pagination">
+    <button id="prev-page" type="button">前のページ</button>
+    <span id="page-info">1 / 1</span>
+    <button id="next-page" type="button">次のページ</button>
+  </div>
 </div>
 
-<script src="../shared/js/orders-store.js"></script>
-<script src="../shared/js/kitchen.js"></script>
+<script src="/js/kitchen.js"></script>
 </body>
 </html>

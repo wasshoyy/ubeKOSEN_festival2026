@@ -30,8 +30,17 @@ loadMenu();
 // cart は前の画面(menu.js)が sessionStorage に保存したものを読み込む。
 const cart = JSON.parse(sessionStorage.getItem("cart") || "{}");
 
+const params = new URLSearchParams(window.location.search);
+const mode = params.get("mode");
+const seatId = params.get("seat_id");
 
-let method = null; // イートインか、を保存してるやつ
+//http://localhost:3000/menu.html?mode=eatin&seat_id=1
+//http://localhost:3000/menu.html?mode=takeout
+//↑これをQRにすればいい、ってコト？！
+//?mode=eatin&seat_id=1ならイートイン、?mode=takeoutならテイクアウト
+
+
+let method = mode; // イートインか、を保存してるやつ
 let peopleCount = 1;
 
 const optionEls = {
@@ -43,6 +52,9 @@ const peopleRow = document.getElementById("people-row");
 const peopleValueEl = document.getElementById("people-value");
 const summaryBox = document.getElementById("summary-box");
 const confirmBtn = document.getElementById("confirm-btn");
+const orderForm = document.getElementById("order-form");
+const paymentView = document.getElementById("payment-view");
+const paymentTable = document.getElementById("payment-table");
 
 
 
@@ -87,6 +99,29 @@ function renderSummary() {
   summaryBox.appendChild(totalRow);
 }
 
+
+//注文確定後の支払い案内
+function renderPaymentTable(order) {
+  paymentTable.innerHTML = "";
+
+  // menuItems.forEach((item) => {
+  //   const qty = cart[item.item_id] || 0;
+  //   const row = document.createElement("tr");
+  //   row.innerHTML = `<td>${item.item_name}</td><td>${qty}</td>`;
+  //   paymentTable.appendChild(row);
+  // });
+
+
+  const priceRow = document.createElement("tr");
+  priceRow.innerHTML = `<td>¥</td><td>${order.total_price}</td>`;
+  paymentTable.appendChild(priceRow);
+
+  const orderIdRow = document.createElement("tr");
+  orderIdRow.innerHTML = `<td>注文番号</td><td>${order.order_id}</td>`;
+  paymentTable.appendChild(orderIdRow);
+}
+
+
 // ---- 提供方法の選択 ----
 function selectMethod(value) {
   method = value;
@@ -99,9 +134,9 @@ function selectMethod(value) {
 
   updateConfirmButton();
 }
-
-optionEls.eatin.addEventListener("click", () => selectMethod("eatin"));
-optionEls.takeout.addEventListener("click", () => selectMethod("takeout"));
+selectMethod(method);
+//optionEls.eatin.addEventListener("click", () => selectMethod("eatin"));
+//optionEls.takeout.addEventListener("click", () => selectMethod("takeout"));
 
 // ---- 人数の増減(1人〜) ----
 document.getElementById("people-minus").addEventListener("click", () => {
@@ -123,7 +158,7 @@ function updateConfirmButton() {
 
 // ---- 戻るボタン: 商品選択画面に戻る ----
 document.getElementById("back-btn").addEventListener("click", () => {
-  window.location.href = "menu.html";
+  window.location.href = "menu.html" + window.location.search;
 });
 
 
@@ -137,23 +172,50 @@ confirmBtn.addEventListener("click", async() => {
   sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));//変換して保存
 
   //POST　API
+  let data
   try {
-    await request('/api/customer/order', {
+    data =await request('/api/customer/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:  JSON.stringify({
-        order_type: method,
-        people: method === "eatin" ? peopleCount : null, 
-        cart: cart 
+      body: JSON.stringify({
+        order_type: method === "eatin" ? "EAT_IN" : "TAKE_OUT",
+        seat_id: method === "eatin" ? Number(seatId) : null,
+        people: method === "eatin" ? peopleCount : null,
+        cart: cart
       })
     });
+
+    const eventSource = new EventSource(
+      `/api/customer/order/events?order_id=${data.order_id}`
+    );
+
+    eventSource.onmessage = (event) => {
+      const order = JSON.parse(event.data);
+
+      if (order.order_status === "paid") {
+        eventSource.close();
+        window.location.href = "tracking.html";
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("支払い状況の通知でエラーが発生しました:", error);
+    };
+
+    sessionStorage.setItem("orderId", String(data.order_id));
+   
   } catch(err){
     console.error(err);
     return;
   }
 
   console.log("注文情報:", orderInfo, "カート:", cart);
-  window.location.href = "tracking.html";
+
+  //支払い案内
+  orderForm.style.display = "none";//注文フォームをけす。
+  paymentView.style.display = "block";//逆に支払い画面を表示
+  renderPaymentTable(data);
+  
 });
 
 

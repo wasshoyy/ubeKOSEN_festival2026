@@ -1,12 +1,23 @@
-更新日：2026/08/14
+更新日：2026/10/09
 
 動作方法
-・menu.htmlを開く
+・npx tsc
+・ode dist/app/server.js
+・http://localhost:3000/menu.html?mode=eatin&seat_id=1を開く。
+
+システム構成
+・フロントエンド：HTML / CSS / JavaScript
+・バックエンド：Node.js + TypeScript + Express
+・データベース：PostgreSQL
 
 現在の進捗
-・画面遷移と見た目の動きのみ実装（サーバー、DB無し）
-・商品の写真未実装
-・注文番号、席番号は固定。
+・お客さんの注文登録
+・注文情報のDB保存
+・CustomerSessionによるセッション管理
+・スタッフ画面での注文一覧表示
+・スタッフによる支払いステータスの更新（unpaid → paid）
+・注文一覧のページネーション
+
 ・tracking.htmlについて
 　①ロボットの発信ボタンが押されたら「もうすぐ注文が来ます」に変わる仕様にするが、現在は５秒ぐらいたったら自動で変わる仕様
 　②ロボットの帰還ボタンが押されたらresult.htmlに変わる仕様にするが、現在は11秒ぐらいたったら自動で変わる仕様
@@ -35,27 +46,27 @@ src/
 │   └── qr/                       # QRコード生成物や案内ポスター素材
 │
 ├── backend/
-│   ├── app.py                    # APIサーバーのエントリーポイント
+│   │
+│   ├── app/
+│   │   ├── db.ts                 DB接続
+│   │   ├── express.d.ts          Expressの型定義
+│   │   ├── server.ts             サーバー起動・設定
+│   │   └── session.ts            顧客セッション管理
+│   │
 │   ├── routes/
-│   │   ├── orders.py             # 注文の作成・取得・状態更新
-│   │   ├── seats.py              # 席(ドッキングポイント)の割当・解放
-│   │   ├── menu.py               # 商品一覧・在庫
-│   │   └── robot.py              # ロボットとの通信・ステータス受信
-│   ├── models/
-│   │   ├── order.py
-│   │   ├── seat.py
-│   │   └── menu_item.py
-│   ├── services/
-│   │   ├── seat_allocator.py     # 席自動割当のロジック
-│   │   └── robot_dispatcher.py   # どのロボットにどの注文を割り当てるか
-│   └── db/
-│       ├── schema.sql            # テーブル定義
-│       └── connection.py
+│   │   ├── customer.ts           顧客向けAPI
+│   │   └── staff.ts              スタッフ向けAPI
+│   │
+│   ├── dist/                     ビルド後のファイル
+│   ├── package.json              パッケージ・スクリプト設定
+│   ├── package-lock.json         依存関係の固定
+│   └── tsconfig.json             TypeScript設定
 │
-├── robot/                        # ロボット側の制御コード(別リポジトリでも可)
+├── db/
+│   └── init.sql
+│
+├── robot（未定）/                        # ロボット側の制御コード(別リポジトリでも可)
 │   └── (機体との通信・センサー処理はここで管理)
 │
-├── docs/
-│   └── specification.md          # 今回の仕様書
 │
 └── README.md

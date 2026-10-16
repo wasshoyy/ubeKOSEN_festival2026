@@ -164,15 +164,16 @@ function updateNextButton() {
 // ---- NEXT: カートの中身を次の画面に渡して遷移する ----
 nextBtn.addEventListener("click", () => {
   sessionStorage.setItem("cart", JSON.stringify(cart));//文字列に変換して保存（保存する時の名前,保存する値）
-  window.location.href = "dock_select.html";//ページ移動
+  window.location.href = "dock_select.html" + window.location.search;
+  //ページ移動
 });
  
  
 // 商品管理画面(products.html)で価格・在庫が変更された時、この画面も自動で反映する。
 // 本実装では、ここをサーバーへのポーリングやWebSocket通知に置き換える想定。
-window.addEventListener("storage", (e) => {
-  if (e.key === "productOverrides") {
-    applyProductOverrides();
-    renderGrid();
-  }
-});
+// window.addEventListener("storage", (e) => {
+//   if (e.key === "productOverrides") {
+//     applyProductOverrides();
+//     renderGrid();
+//   }
+// });
