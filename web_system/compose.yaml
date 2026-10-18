@@ -8,7 +8,7 @@ services: #Dockerで動かすサービス（コンテナ）をここに書くよ
       POSTGRES_DB: festival #初回のデータベース初期化時に festival を作る
       PGDATA: /var/lib/postgresql/data/pgdata #どこにDBデータをどこに保存するか
     volumes: #volumes：データを永続化できるように、コンテナの外にデータを置く場所
-      - ./db:/docker-entrypoint-initdb.d #db フォルダの init.sql を初期化用SQLとして実行できるように
+      - ./src/db:/docker-entrypoint-initdb.d #sec/dbフォルダの init.sql を初期化用SQLとして実行できるように
       - postgres_data:/var/lib/postgresql/data #永続化
           
 volumes:

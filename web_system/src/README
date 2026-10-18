@@ -2,6 +2,7 @@
 
 動作方法
 
+
 初めての場合、
 ・docker compose up --build
 ・/backendに入って、npm install
@@ -13,9 +14,19 @@
 ・npx tsc(TypeScriptのソースコードをコンパイル)
 ・node dist/app/server.js
 
-そして以下のURLを開く
+お客さん用URL
 ・http://localhost:3000/menu.html?mode=eatin&seat_id=1を開く。（席がn：mode=eatin&seat_id=n）
 ・http://localhost:3000/menu.html?mode=takeout（テイクアウト用）
+
+スタッフ用URL
+・http://localhost:3000/counter.html
+・http://localhost:3000/seat.html
+・http://localhost:3000/kitchen.html
+
+
+
+
+
 
 システム構成
 ・フロントエンド：HTML / CSS / JavaScript
