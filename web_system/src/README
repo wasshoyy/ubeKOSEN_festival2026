@@ -1,9 +1,21 @@
 更新日：2026/10/09
 
 動作方法
+
+初めての場合、
+・docker compose up --build
+・/backendに入って、npm install
 ・npx tsc
-・ode dist/app/server.js
-・http://localhost:3000/menu.html?mode=eatin&seat_id=1を開く。
+・node dist/app/server.js
+
+二回目以降、
+・docker compose up -dでDBとかを起動、
+・npx tsc(TypeScriptのソースコードをコンパイル)
+・node dist/app/server.js
+
+そして以下のURLを開く
+・http://localhost:3000/menu.html?mode=eatin&seat_id=1を開く。（席がn：mode=eatin&seat_id=n）
+・http://localhost:3000/menu.html?mode=takeout（テイクアウト用）
 
 システム構成
 ・フロントエンド：HTML / CSS / JavaScript
@@ -19,11 +31,12 @@
 ・注文一覧のページネーション
 
 ・tracking.htmlについて
-　①ロボットの発信ボタンが押されたら「もうすぐ注文が来ます」に変わる仕様にするが、現在は５秒ぐらいたったら自動で変わる仕様
-　②ロボットの帰還ボタンが押されたらresult.htmlに変わる仕様にするが、現在は11秒ぐらいたったら自動で変わる仕様
+ロボットの帰還ボタンが押されたらresult.htmlに変わる仕様にするが、現在は11秒ぐらいたったら自動で変わる仕様
 　
 
-ファイル構成について
+
+
+ファイル構成について（未整理）
 src/
 ├── frontend/
 │   ├── customer/                 # お客さん用(スマホ)

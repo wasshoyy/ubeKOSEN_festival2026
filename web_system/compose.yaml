@@ -5,9 +5,10 @@ services: #Dockerで動かすサービス（コンテナ）をここに書くよ
      - "5432:5432"
     environment: #設定値の受け渡し
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} #パスワード保存
+      POSTGRES_DB: festival #初回のデータベース初期化時に festival を作る
       PGDATA: /var/lib/postgresql/data/pgdata #どこにDBデータをどこに保存するか
     volumes: #volumes：データを永続化できるように、コンテナの外にデータを置く場所
-      - ./db:/db #init.sqlなどのSQLファイルをコンテナから見えるようにする
+      - ./db:/docker-entrypoint-initdb.d #db フォルダの init.sql を初期化用SQLとして実行できるように
       - postgres_data:/var/lib/postgresql/data #永続化
           
 volumes:

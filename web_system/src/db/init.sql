@@ -90,3 +90,29 @@ CREATE TABLE IF NOT EXISTS delivery_tasks
     FOREIGN KEY (robot_id)
         REFERENCES robot(robot_id)
 );
+
+
+
+
+INSERT INTO item (item_id, item_name, price, stock)
+VALUES
+    (1, 'ABCスープ', 200, 100),
+    (2, 'みそ汁', 200, 100),
+    (3, 'コーンスープ', 200, 100);
+ON CONFLICT (item_id) DO NOTHING;
+
+INSERT INTO seat (seat_id, capacity)
+VALUES
+    (1,4),
+    (2,4),
+    (3,4),
+    (4,4);
+ON CONFLICT (seat_id) DO NOTHING;
+
+INSERT INTO robot (robot_id, connection_status, status)
+VALUES
+    (1, 'not_connected', 'Waiting_order'),
+    (2, 'not_connected', 'Waiting_order'),
+    (3, 'not_connected', 'Waiting_order');
+ON CONFLICT (robot_id) DO NOTHING;
+ 
