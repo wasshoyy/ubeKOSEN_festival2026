@@ -136,10 +136,9 @@ router.post(
             
             
             
-            //イートインなら配膳タスクを作成する
-            console.log("配送タスク作成");
-
+            //イートインなら配膳タスクありで厨房タスクを作成する
             if(order_type === "EAT_IN") {
+                console.log("イートイン：配送タスク作成");
                 const itemqty = await client.query(
                     `SELECT order_item_id
                     FROM order_item
@@ -168,8 +167,35 @@ router.post(
                     );
                    table = table % 3 + 1;
                 }
-                console.log("配送タスク作成完了");
+                console.log("イートイン：配送タスク作成完了");
             }
+
+
+
+            //テイクアウトなら配送タスクなしで厨房に送るデータを送る
+            if(order_type === "TAKE_OUT") {
+                console.log("テイクアウト：厨房タスク作成");
+
+                const itemqty = await client.query(
+                    `SELECT order_item_id
+                    FROM order_item
+                    WHERE order_id = $1`,
+                    [Number(order_id)]
+                );
+
+
+                for (const item of itemqty.rows) {
+                    await client.query(
+                        `INSERT INTO delivery_tasks
+                        (order_item_id, robot_id, cook_status, delivery_status)
+                        VALUES ($1, $2, $3, $4)
+                        ON CONFLICT DO NOTHING`,
+                        [item.order_item_id, null, "uncook", "deliveryed"]
+                    );
+                }
+                console.log("テイクアウト：厨房タスク作成完了");
+            }
+
 
             await client.query("COMMIT");
 
@@ -215,19 +241,19 @@ router.get(
                 item.item_name,
                 delivery_tasks.robot_id, delivery_tasks.cook_status, delivery_tasks.delivery_status,
                 robot.status AS robot_status
-            FROM orders
-            INNER JOIN order_item
-                ON orders.order_id = order_item.order_id
-            INNER JOIN item
-                ON item.item_id = order_item.item_id
-            INNER JOIN delivery_tasks
-                ON delivery_tasks.order_item_id = order_item.order_item_id
-            INNER JOIN robot
-                ON robot.robot_id = delivery_tasks.robot_id
-            WHERE orders.order_status = 'paid'
-                AND orders.order_type = 'EAT_IN'
-            ORDER BY orders.order_id ASC,
-                order_item.order_item_id ASC;`
+                FROM orders
+                INNER JOIN order_item
+                    ON orders.order_id = order_item.order_id
+                INNER JOIN item
+                    ON item.item_id = order_item.item_id
+                INNER JOIN delivery_tasks
+                    ON delivery_tasks.order_item_id = order_item.order_item_id
+                LEFT JOIN robot
+                    ON robot.robot_id = delivery_tasks.robot_id
+                WHERE orders.order_status = 'paid'
+                    AND orders.order_type IN ('EAT_IN', 'TAKE_OUT')
+                ORDER BY orders.order_id ASC,
+                    order_item.order_item_id ASC;`
         );
 
         let order_item_info = [];
