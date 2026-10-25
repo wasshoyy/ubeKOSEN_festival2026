@@ -1,7 +1,7 @@
-更新日：2026/10/09
+更新日：2026/10/19
+
 
 動作方法
-
 
 初めての場合、
 ・docker compose up --build
@@ -13,6 +13,7 @@
 ・docker compose up -dでDBとかを起動、
 ・npx tsc(TypeScriptのソースコードをコンパイル)
 ・node dist/app/server.js
+
 
 お客さん用URL
 ・http://localhost:3000/menu.html?mode=eatin&seat_id=1を開く。（席がn：mode=eatin&seat_id=n）
@@ -33,16 +34,20 @@
 ・バックエンド：Node.js + TypeScript + Express
 ・データベース：PostgreSQL
 
+
 現在の進捗
-・お客さんの注文登録
-・注文情報のDB保存
 ・CustomerSessionによるセッション管理
-・スタッフ画面での注文一覧表示
-・スタッフによる支払いステータスの更新（unpaid → paid）
-・注文一覧のページネーション
+
+・画面作成完了
+    ・お客さん用の画面（customer/menu.html,dock_select.html,）
+    ・支払いを行う店頭画面（counter/counter.html）
+    ・席情報確認画面（counter/seat.html）
+    ・厨房画面（kitchen/kitchen.html）
+
+
 
 ・tracking.htmlについて
-ロボットの帰還ボタンが押されたらresult.htmlに変わる仕様にするが、現在は11秒ぐらいたったら自動で変わる仕様
+ロボットの帰還ボタンが押されたらresult.htmlに変わる仕様にするが、現在はｎ秒ぐらいたったら自動で変わる仕様
 　
 
 
