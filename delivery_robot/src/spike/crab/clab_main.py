@@ -25,6 +25,17 @@ SMILE = Matrix(
     ]
 )
 
+#デモ用
+ONE = Matrix(
+    [
+        [0, 0, 100, 0, 0],
+        [0, 100, 100, 0, 0],
+        [0, 0, 100, 0, 0],
+        [0, 0, 100, 0, 0],
+        [0, 100, 100, 100, 0],
+    ]
+)
+
 class State:
     Instruction_wait = 0
     Soup_wait = 1
@@ -42,14 +53,26 @@ async def check_soup():
         await wait(10)
         d = await ultrasonic_sensor.distance()
         have_soup = (d <= 100)
+        # デモ用
+        if have_soup:
+            hub.light.on(Color.RED)
+        else:
+            hub.light.on(Color.GREEN)
 
 async def main():
     global state
     hub.display.icon(SMILE)
     run(True)
-        
+    
+    # デモ用
+    hub.display.icon(ONE)
     while True:
         await wait(1)
+
+        run(True)
+        reset_mileage()
+
+        """
         table_id = 0
         if state == State.Instruction_wait:
             # PCからの席指定待ち状態
@@ -107,6 +130,7 @@ async def main():
             
             if get_mileage() >= 6150:
                 state = State.Instruction_wait
+        """
 
 async def multi():
     await multitask(main(), reception(), linetrace(), check_soup())

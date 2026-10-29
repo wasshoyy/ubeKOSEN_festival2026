@@ -17,6 +17,19 @@ def run(tf):
 
 angle_max = 120
 angle_min = -180
+
+# 最高速度verのパラメータたち
+SPEED_MAX = 1000
+speed = SPEED_MAX
+target_angle = 0
+p_gain = 0.9
+i_gain = 0.3
+d_gain = 10.0
+brake_gain = 100
+brake_delta = 1
+angle_delta_max = 10
+"""
+
 SPEED_MAX = 400
 speed = SPEED_MAX
 target_angle = 0
@@ -26,6 +39,9 @@ d_gain = 40.0
 brake_gain = 100
 brake_delta = 1
 angle_delta_max = 3
+
+"""
+
 black = 20.0
 white = 60.0
 target_reflection = (black + white) / 2.0
@@ -150,7 +166,7 @@ def exit():
     global speed
     # 3秒以内を目指す
     while True:
-        speed -= 10
+        speed -= SPEED_MAX / 100
         motor_drive.run(max(0, speed))
         angle = motor_direction.angle()
         if angle == 0:
