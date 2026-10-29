@@ -7,19 +7,22 @@ from pybricks.tools import wait, StopWatch, run_task, multitask
 hub = PrimeHub()
 
 motor_drive = Motor(Port.C)
-motor_direction = Motor(Port.D)
-ultrasonic_sensor = UltrasonicSensor(Port.F)
+motor_direction = Motor(Port.D, Direction.COUNTERCLOCKWISE)
+# ultrasonic_sensor = UltrasonicSensor(Port.F)
 color_sesor = ColorSensor(Port.E)
 
-angle_max = 120
-angle_min = -180
-SPEED_MAX = 200
+angle_max = 270
+angle_min = -270
+SPEED_MAX = 400
 speed = SPEED_MAX
 target_angle = 0
-p_gain = 0.4
-i_gain = 0.05
-d_gain = 0.02
+p_gain = 0.58
+i_gain = 0.0
+d_gain = 10.0
 angle_delta_max = 1000
+
+brake_gain = 0.5
+brake_delta = 0.001
 black = 20.0
 white = 60.0
 target_reflection = (black + white) / 2.0
@@ -47,23 +50,11 @@ distance_max = 300
 distance_min = 100
 # course_length = 4600
 
-async def check_front_distance():
-    global speed
-    # distance_old = 0
-    while True:
-        await wait(10)
-        distance_now = max(distance_min, min(distance_max, await ultrasonic_sensor.distance()))
-        speed = SPEED_MAX * (distance_now - distance_min) / (distance_max - distance_min)
-        # distance_old = distance_now
-
 async def init():
     ringbuff_init()
     global angle_min, angle_max
-    motor_direction.reset_angle(0)
 
     await wait(10)
-    angle_min = -90
-    angle_max = 90
     await motor_direction.run_target(100, 0, then=Stop.HOLD, wait=True)
     await wait(10)
 
@@ -72,13 +63,13 @@ async def linetrace():
     ref_old = 0
     ref_total = 0
     angle = 0
+    brake_now = 0.0
     while True:
         await wait(1)
         # print(motor_direction.angle())
 
         hsv = await color_sesor.hsv()
         reflection = float(hsv.v)
-        d = ultrasonic_sensor.distance()
 
         # black <= reflection <= white
         reflection = max(black, min(white, reflection))
@@ -90,7 +81,7 @@ async def linetrace():
         ringbuff_set(ref_now)
         ref_total += ref_now
         ref_total -= ringbuff_get(-(RINGBUFF_MAX-1))
-        
+
         p = p_gain * ref_now
         i = i_gain * (ref_total / float(RINGBUFF_MAX))
         d = d_gain * ref_diff
@@ -109,10 +100,29 @@ async def linetrace():
         # delta_angle = target_angle - motor_direction.angle()
         motor_direction.track_target(angle)
 
+        brake = brake_gain * abs(ref_now)
+        brake_now += max(- brake_delta, min(brake_delta, brake - brake_now))
+        speed_now = speed * (1 - brake_now)
+
         # motor_drive.run(speed - brake_now)
-        motor_drive.run(speed)
+        motor_drive.run(speed_now)
+        print(speed_now)
 
 async def main():
-    await multitask(linetrace(), check_front_distance())
+    await linetrace()
+    # await multitask(linetrace())
+try:
+    run_task(main())
 
-run_task(main())
+except SystemExit:
+    # 3秒以内を目指す
+    while True:
+        speed -= 10
+        motor_drive.run(max(0, speed))
+        angle = motor_direction.angle()
+        if angle == 0:
+            break
+        elif angle > 0:
+            motor_direction.run(-100)
+        elif angle < 0:
+            motor_direction.run(100)

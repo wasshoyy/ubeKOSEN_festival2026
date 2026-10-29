@@ -10,10 +10,17 @@ PYBRICKS_COMMAND_EVENT_CHAR_UUID = (
 HUB_NAME = "command_center"
 
 SPIKE_NUM = 2
+
+class SIGNAL_TYPE:
+    ALL = 0
+    TASK = 1
+    STATE = 2
+    # POLL = 3
+
 # 各SPIKEの[connected, running]
 spike_states = [[False, False] for _ in range(SPIKE_NUM)]
 
-command_queue = asyncio.Queue()
+spike_commands = [False for i in range(SPIKE_NUM)]
 
 communication_task = None
 
@@ -61,17 +68,18 @@ async def communication_loop():
 
         async def transmission():
             while True:
-                command = await command_queue.get()
+                for robot_id in range(SPIKE_NUM):
+                    command = [SIGNAL_TYPE.TASK, robot_id, spike_commands[robot_id]]
 
-                print("send:", command)
+                    print("send:", command)
 
-                await client.write_gatt_char(
-                    PYBRICKS_COMMAND_EVENT_CHAR_UUID,
-                    b"\x06" + bytes(command),
-                    response=True
-                )
-                command_queue.task_done()
-
+                    await client.write_gatt_char(
+                        PYBRICKS_COMMAND_EVENT_CHAR_UUID,
+                        b"\x06" + bytes(command),
+                        response=True
+                    )
+                    await asyncio.sleep(0.1)
+        
         async def reception():
             while True:
                 # 結果待ち
@@ -139,8 +147,9 @@ async def stop():
     if communication_task is not None:
         communication_task.cancel()
 
-async def addCommand(robot_id, stop):
-    await command_queue.put([1, robot_id, stop])
+def addCommand(robot_id, stop):
+    global spike_commands
+    spike_commands[robot_id] = stop
 
 def getStates():
     return spike_states
