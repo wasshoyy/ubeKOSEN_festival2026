@@ -147,13 +147,29 @@ router.post(
                 );
 
                 //いちorder_item_idごとに、delivery_taskにそのorder_item_idのタスクがないか確認後ないなら作成。
-                let table = 1;
+                // 利用可能そうなロボットたちを取得
+                const robot_ids = await client.query(
+                    `SELECT robot_id
+                    FROIM robot
+                    WHERE status = 'Waiting_order'`
+                );
+                // WHERE connection_status = 'connected'
+                //   AND status = 'Waiting_order'
+
+                let robot_id;
+                if(robot_ids.rows.length !== 0){
+                    // 一番番号が若い子を選択
+                    robot_id = robot_ids.rows[0].robot_id;
+                }
+                else{
+                    robot_id = 0;
+                }
                 for (const item of itemqty.rows) {
                     const robot = await client.query(
                         `SELECT connection_status,status
                         FROM robot
                         WHERE robot_id = $1`,
-                        [table]
+                        [robot_id]
                     );
                     // if(robot.rows[0].connection_status === "not_connected"){
                     //     throw new Error(`robot ${robot.rows[0].robot_id} は接続されていません。`);
@@ -163,9 +179,8 @@ router.post(
                         (order_item_id, robot_id, cook_status, delivery_status)
                         VALUES ($1, $2, $3, $4)
                         ON CONFLICT DO NOTHING`,
-                        [item.order_item_id, table, "uncook", "undelivery"]
+                        [item.order_item_id, robot_id, "uncook", "undelivery"]
                     );
-                   table = table % 3 + 1;
                 }
                 console.log("イートイン：配送タスク作成完了");
             }
