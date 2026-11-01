@@ -5,6 +5,7 @@ import path  from "path";
 
 import customerRouter from "../routes/customer.js";
 import staffRouter from "../routes/staff.js";
+import robotRouter from "../routes/robot.js";
 
 
 const __dirname = import.meta.dirname;//appを指す
@@ -25,7 +26,7 @@ app.use(express.static(path.join(__dirname, '..', '..','..','frontend','kitchen'
 
 app.use("/api/customer", customerRouter);
 app.use("/api/staff", staffRouter);
-
+app.use("/api/robot", robotRouter);
 
 
 
