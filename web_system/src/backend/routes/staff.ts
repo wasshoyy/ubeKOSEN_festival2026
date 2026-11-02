@@ -7,6 +7,7 @@ import { subscribeNewOrders } from "../app/orderEvents.js";
 import { subscribeNewPaidOrders } from "../app/orderEvents.js";
 import { notifyNewPaidOrders } from "../app/orderEvents.js";
 import { subscribeDeliverted } from "../app/orderEvents.js";
+import { notifyRobotAssignment, notifyRobotReady } from "../app/robotEvents.js"
 
 const router = express.Router();
 
@@ -102,7 +103,7 @@ router.post(
 
             console.log("注文の支払いステータス変更");
             const order = await client.query(
-                `SELECT order_id, order_type, order_status
+                `SELECT order_id, seat_id, order_type, order_status
                 FROM orders
                 WHERE order_id = $1
                 FOR UPDATE`,
@@ -115,6 +116,8 @@ router.post(
                     error: "指定のorder_idは見つかりませんでした"
                 });
             }
+
+            const seat_id = order.rows[0].seat_id;
             const order_type = order.rows[0].order_type;
             const order_status = order.rows[0].order_status;
 
@@ -150,7 +153,7 @@ router.post(
                 // 利用可能そうなロボットたちを取得
                 const robot_ids = await client.query(
                     `SELECT robot_id
-                    FROIM robot
+                    FROM robot
                     WHERE status = 'Waiting_order'`
                 );
                 // WHERE connection_status = 'connected'
@@ -164,6 +167,9 @@ router.post(
                 else{
                     robot_id = 0;
                 }
+
+                notifyRobotAssignment(robot_id, order_id, seat_id);
+
                 for (const item of itemqty.rows) {
                     const robot = await client.query(
                         `SELECT connection_status,status
@@ -317,6 +323,7 @@ router.post("/orders/deli", async (req, res) => {
         const task = await pool.query(
             `SELECT delivery_tasks.delivery_status,
                     delivery_tasks.cook_status,
+                    delivery_tasks.robot_id,
                     order_item.order_id
             FROM delivery_tasks
             INNER JOIN order_item
@@ -349,6 +356,7 @@ router.post("/orders/deli", async (req, res) => {
             });
         }
 
+        notifyRobotReady(task.rows[0].robot_id);
 
         await pool.query(
             `UPDATE delivery_tasks

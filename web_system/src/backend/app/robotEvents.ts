@@ -20,6 +20,8 @@ export function subscribeClient(res: Response) {
 
 // ロボットに配膳タスクを割り振る(ことを接続中のブラウザへ通知)
 export function notifyRobotAssignment(robotId: number, orderId: number, tableId: number) {
+    if (clients.size === 0) return;
+    
     const message = `data: ${JSON.stringify({
         event_type: "assignment",
         robot_id: robotId,

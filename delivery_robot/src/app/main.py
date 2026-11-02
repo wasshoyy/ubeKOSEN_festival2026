@@ -1,5 +1,6 @@
 import asyncio
 import httpx
+import json
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -73,11 +74,6 @@ async def read_index(request: Request):
             "message": "Hello, FastAPI!"
         }
     )
-
-
-@app.get("/api/health")
-async def root():
-    return {"status": "running"}
 
 
 class RobotCommand(BaseModel):

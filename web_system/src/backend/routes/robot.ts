@@ -2,6 +2,7 @@
 import express from "express";
 import { pool } from "../app/db.js";
 import { subscribeClient, notifyRobotAssignment, notifyRobotReady } from "../app/robotEvents.js";
+
 const router = express.Router();
 
 
@@ -15,11 +16,12 @@ router.get("/events", (req, res) => {
     subscribeClient(res);
 });
 
-
-setTimeout(() => {
+/*
+setInterval(() => {
+    console.log("1秒おきにassignment送信");
     notifyRobotAssignment(1, 2, 3);
 }, 1000);
-
+*/
 
 // ローカルサーバーからロボットの状態を更新
 router.put("/status", async (req, res) => {
