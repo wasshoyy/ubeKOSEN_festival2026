@@ -16,6 +16,11 @@ router.get("/events", (req, res) => {
 });
 
 
+setTimeout(() => {
+    notifyRobotAssignment(1, 2, 3);
+}, 1000);
+
+
 // ローカルサーバーからロボットの状態を更新
 router.put("/status", async (req, res) => {
     const robtoId = req.body?.robotId;
@@ -30,7 +35,8 @@ router.put("/status", async (req, res) => {
     }
 
     // statusの種類と名前、変更の可能性あり
-    if (status !== "Waiting_order" &&
+    if (
+        status !== "Waiting_order" &&
         status !== "Ready" &&
         status !== "Running" &&
         status !== "Waiting_customer"
@@ -42,6 +48,7 @@ router.put("/status", async (req, res) => {
     console.log(`connection: ${connection}`);
     console.log(`status: ${status}`);
 
+    /*
     //トランザクションはここから(=^・^=)
     const client = await pool.connect();
 
@@ -75,6 +82,7 @@ router.put("/status", async (req, res) => {
 
         return res.status(500).json({ error: 'ロボット情報の更新に失敗しました' });
     }
+    */
 
 });
 

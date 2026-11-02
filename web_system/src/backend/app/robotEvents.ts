@@ -11,6 +11,7 @@ const clients = new Set<Response>();
 export function subscribeClient(res: Response) {
     clients.add(res);
 
+    console.log("SSE接続完了");
     res.on("close", () => {
         clients.delete(res);
     });
