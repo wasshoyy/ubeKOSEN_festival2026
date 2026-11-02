@@ -34,6 +34,21 @@ async def receive_sse():
                     
                     print(data)
 
+async def updateStatus():
+    async with httpx.AsyncClient(timeout=None) as client:
+        response = await client.put(
+            "http://localhost:3000/api/robot/status",
+            json={
+                "robot_id": 0,
+                "connection": "connected",
+                "status": "Running"
+            }
+        )
+        
+        print(response.status_code)
+        print(response.text)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("lifespan: start")

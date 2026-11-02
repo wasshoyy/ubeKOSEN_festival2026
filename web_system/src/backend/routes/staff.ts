@@ -168,6 +168,7 @@ router.post(
                     robot_id = 0;
                 }
 
+                // ロボットの割り振り情報をSSEでローカルサーバーへ伝達
                 notifyRobotAssignment(robot_id, order_id, seat_id);
 
                 for (const item of itemqty.rows) {
@@ -356,6 +357,7 @@ router.post("/orders/deli", async (req, res) => {
             });
         }
 
+        // 準備完了をSSEで通知
         notifyRobotReady(task.rows[0].robot_id);
 
         await pool.query(
