@@ -7,6 +7,7 @@ import { subscribeNewOrders } from "../app/orderEvents.js";
 import { subscribeNewPaidOrders } from "../app/orderEvents.js";
 import { notifyNewPaidOrders } from "../app/orderEvents.js";
 import { subscribeDeliverted } from "../app/orderEvents.js";
+import { notifyRobotAssignment, notifyRobotReady } from "../app/robotEvents.js"
 
 const router = express.Router();
 
@@ -102,7 +103,7 @@ router.post(
 
             console.log("注文の支払いステータス変更");
             const order = await client.query(
-                `SELECT order_id, order_type, order_status
+                `SELECT order_id, seat_id, order_type, order_status
                 FROM orders
                 WHERE order_id = $1
                 FOR UPDATE`,
@@ -115,6 +116,8 @@ router.post(
                     error: "指定のorder_idは見つかりませんでした"
                 });
             }
+
+            const seat_id = order.rows[0].seat_id;
             const order_type = order.rows[0].order_type;
             const order_status = order.rows[0].order_status;
 
@@ -147,13 +150,33 @@ router.post(
                 );
 
                 //いちorder_item_idごとに、delivery_taskにそのorder_item_idのタスクがないか確認後ないなら作成。
-                let table = 1;
+                // 利用可能そうなロボットたちを取得
+                const robot_ids = await client.query(
+                    `SELECT robot_id
+                    FROM robot
+                    WHERE status = 'Waiting_order'`
+                );
+                // WHERE connection_status = 'connected'
+                //   AND status = 'Waiting_order'
+
+                let robot_id;
+                if(robot_ids.rows.length !== 0){
+                    // 一番番号が若い子を選択
+                    robot_id = robot_ids.rows[0].robot_id;
+                }
+                else{
+                    robot_id = 0;
+                }
+
+                // ロボットの割り振り情報をSSEでローカルサーバーへ伝達
+                notifyRobotAssignment(robot_id, order_id, seat_id);
+
                 for (const item of itemqty.rows) {
                     const robot = await client.query(
                         `SELECT connection_status,status
                         FROM robot
                         WHERE robot_id = $1`,
-                        [table]
+                        [robot_id]
                     );
                     // if(robot.rows[0].connection_status === "not_connected"){
                     //     throw new Error(`robot ${robot.rows[0].robot_id} は接続されていません。`);
@@ -163,9 +186,8 @@ router.post(
                         (order_item_id, robot_id, cook_status, delivery_status)
                         VALUES ($1, $2, $3, $4)
                         ON CONFLICT DO NOTHING`,
-                        [item.order_item_id, table, "uncook", "undelivery"]
+                        [item.order_item_id, robot_id, "uncook", "undelivery"]
                     );
-                   table = table % 3 + 1;
                 }
                 console.log("イートイン：配送タスク作成完了");
             }
@@ -302,6 +324,7 @@ router.post("/orders/deli", async (req, res) => {
         const task = await pool.query(
             `SELECT delivery_tasks.delivery_status,
                     delivery_tasks.cook_status,
+                    delivery_tasks.robot_id,
                     order_item.order_id
             FROM delivery_tasks
             INNER JOIN order_item
@@ -334,6 +357,8 @@ router.post("/orders/deli", async (req, res) => {
             });
         }
 
+        // 準備完了をSSEで通知
+        notifyRobotReady(task.rows[0].robot_id);
 
         await pool.query(
             `UPDATE delivery_tasks
