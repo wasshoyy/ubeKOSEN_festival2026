@@ -1,7 +1,7 @@
 //robot.ts
 import express from "express";
 import { pool } from "../app/db.js";
-import { subscribeClient } from "../app/robotEvents.js";
+import { subscribeClient, notifyRobotAssignment } from "../app/robotEvents.js";
 
 const router = express.Router();
 
@@ -16,12 +16,12 @@ router.get("/events", (req, res) => {
     subscribeClient(res);
 });
 
-/*
+
 setInterval(() => {
     console.log("1秒おきにassignment送信");
-    notifyRobotAssignment(1, 2, 3);
+    notifyRobotAssignment(0, 2, 0);
 }, 1000);
-*/
+
 
 // ローカルサーバーからロボットの状態を更新
 router.put("/status", async (req, res) => {
@@ -41,7 +41,8 @@ router.put("/status", async (req, res) => {
         status !== "Waiting_order" &&
         status !== "Ready" &&
         status !== "Running" &&
-        status !== "Waiting_customer"
+        status !== "Waiting_customer" &&
+        status !== "Send_back"
     ) {
         return res.status(400).json ({ error: "statusにエラーあり" });
     }

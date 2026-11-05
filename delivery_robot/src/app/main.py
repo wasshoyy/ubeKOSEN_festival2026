@@ -27,12 +27,40 @@ async def receive_sse():
 
             print("SSE接続成功")
 
+            event_type = None
+            data = []
+
             async for line in response.aiter_lines():
-                if line.startswith("data:"):
-                    message = line[5:].strip()
-                    data = json.loads(message)
-                    
-                    print(data)
+                # イベントの終端
+                if line == "":
+                    if event_type is not None:
+                        message = "\n".join(data)
+                        payload = json.loads(message) if message else {}
+
+                        # イベントの種類によって処理を分岐
+                        if event_type == "assignment":
+                            robot_id = payload["robot_id"]
+                            order_id = payload["order_id"]
+                            table_id = payload["table_id"]
+                            
+                            print("assignment:", payload)
+
+                            spike_ble.assignment(robot_id, table_id)
+
+                        elif event_type == "ready":
+                            print("準備完了:", payload)
+                    event_type = None
+                    data = []
+                    continue
+
+                # イベントの種類
+                if line.startswith("event:"):
+                    event_type = line[6:].strip()
+
+                # データ
+                elif line.startswith("data:"):
+                    data.append(line[5:].strip())
+
 
 async def updateStatus():
     async with httpx.AsyncClient(timeout=None) as client:

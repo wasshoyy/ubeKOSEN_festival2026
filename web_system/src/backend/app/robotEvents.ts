@@ -22,8 +22,9 @@ export function subscribeClient(res: Response) {
 export function notifyRobotAssignment(robotId: number, orderId: number, tableId: number) {
     if (clients.size === 0) return;
     
-    const message = `data: ${JSON.stringify({
-        event_type: "assignment",
+    const message = 
+    `event: assignment\n` +
+    `data: ${JSON.stringify({
         robot_id: robotId,
         order_id: orderId,
         table_id: tableId,
@@ -36,8 +37,9 @@ export function notifyRobotAssignment(robotId: number, orderId: number, tableId:
 
 // 指定ロボットの発進準備の完了を接続中のブラウザへ通知
 export function notifyRobotReady(robotId: number) {
-    const message = `data: ${JSON.stringify({
-        event_type: "ready",
+    const message = 
+    `event: ready\n` +
+    `data: ${JSON.stringify({
         robot_id: robotId,
     })}\n\n`;
 
