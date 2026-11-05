@@ -1,8 +1,6 @@
 services: #Dockerで動かすサービス（コンテナ）をここに書くよ
   postgres: #サービスの名前
     image: postgres:18 #PostgreSQL 18のDockerイメージを使って、このサービスを作る
-    ports:
-     - "5432:5432"
     environment: #設定値の受け渡し
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} #パスワード保存
       POSTGRES_DB: festival #初回のデータベース初期化時に festival を作る
@@ -10,6 +8,24 @@ services: #Dockerで動かすサービス（コンテナ）をここに書くよ
     volumes: #volumes：データを永続化できるように、コンテナの外にデータを置く場所
       - ./src/db:/docker-entrypoint-initdb.d #sec/dbフォルダの init.sql を初期化用SQLとして実行できるように
       - postgres_data:/var/lib/postgresql/data #永続化
-          
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d festival"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:

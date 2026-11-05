@@ -1,11 +1,13 @@
 import dotenv from "dotenv";
-dotenv.config({ path: "../../.env" });
+import path from "path";
+dotenv.config({ path: path.resolve(import.meta.dirname, "../../../.env") });
+
 import { Pool } from 'pg';//読み込む
 
 
 //接続管理Poolを新しく作る、DATABASE_URLから接続するための情報を取得、
 export const pool = new Pool({
-  host: "localhost",
+  host: "postgres",
   port: 5432,
   database: "festival",
   user: "postgres",

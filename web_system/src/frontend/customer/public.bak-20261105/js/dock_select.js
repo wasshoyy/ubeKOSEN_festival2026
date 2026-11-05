@@ -1,0 +1,222 @@
+// dock_select.js
+// イートイン/テイクアウト選択・人数入力・注文内容確認画面の動作。
+
+
+// menuItems API
+let menuItems = [];
+async function request(url, options) {
+  const response = await fetch(url, options);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(response.status + ": " + data.error);
+  }
+
+  return data;
+}
+async function loadMenu() {
+  menuItems = await request("/api/customer/menu");
+
+  console.log("menuItems:", menuItems);
+
+  renderSummary();
+}
+
+loadMenu();
+
+
+
+
+// cart は前の画面(menu.js)が sessionStorage に保存したものを読み込む。
+const cart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+
+const params = new URLSearchParams(window.location.search);
+const mode = params.get("mode");
+const seatId = params.get("seat_id");
+
+//http://localhost:3000/menu.html?mode=eatin&seat_id=1
+//http://localhost:3000/menu.html?mode=takeout
+//↑これをQRにすればいい、ってコト？！
+//?mode=eatin&seat_id=1ならイートイン、?mode=takeoutならテイクアウト
+
+
+let method = mode; // イートインか、を保存してるやつ
+let peopleCount = 1;
+
+const optionEls = {
+  eatin: document.getElementById("option-eatin"),
+  takeout: document.getElementById("option-takeout"),
+};
+
+const peopleRow = document.getElementById("people-row");
+const peopleValueEl = document.getElementById("people-value");
+const summaryBox = document.getElementById("summary-box");
+const confirmBtn = document.getElementById("confirm-btn");
+const orderForm = document.getElementById("order-form");
+const paymentView = document.getElementById("payment-view");
+const paymentTable = document.getElementById("payment-table");
+
+
+
+
+// ---- 注文内容の要約を描画する(カートの中身 + 合計) ----
+function renderSummary() {
+  summaryBox.innerHTML = "";
+
+  let totalQty = 0;
+  let totalPrice = 0;
+  
+  Object.entries(cart).forEach(([itemId, qty]) => {
+    if (qty <= 0) return;
+    
+    const item = menuItems.find((i) => i.item_id === Number(itemId));
+    if (!item) return;
+    
+    totalQty += qty;
+    totalPrice += item.price * qty;
+    
+    const line = document.createElement("div");
+    line.className = "lab-summary-line";
+
+    //htmlへの表示(買ったものと量)
+    line.innerHTML = `
+      <span>${item.item_name}</span>
+      <span>${qty}</span>
+    `;
+    
+    summaryBox.appendChild(line);
+  });
+
+  //区切り
+  const divider = document.createElement("div");
+  divider.className = "lab-summary-divider";
+  summaryBox.appendChild(divider);
+
+  ////htmlへの表示(量と合計)
+  const totalRow = document.createElement("div");
+  totalRow.className = "lab-summary-total";
+  totalRow.innerHTML = `<span>数量：${totalQty}</span><span class="lab-accent-text">合計：¥${totalPrice}</span>`;
+  summaryBox.appendChild(totalRow);
+}
+
+
+//注文確定後の支払い案内
+function renderPaymentTable(order) {
+  paymentTable.innerHTML = "";
+
+  // menuItems.forEach((item) => {
+  //   const qty = cart[item.item_id] || 0;
+  //   const row = document.createElement("tr");
+  //   row.innerHTML = `<td>${item.item_name}</td><td>${qty}</td>`;
+  //   paymentTable.appendChild(row);
+  // });
+
+
+  const priceRow = document.createElement("tr");
+  priceRow.innerHTML = `<td>¥</td><td>${order.total_price}</td>`;
+  paymentTable.appendChild(priceRow);
+
+  const orderIdRow = document.createElement("tr");
+  orderIdRow.innerHTML = `<td>注文番号</td><td>${order.order_id}</td>`;
+  paymentTable.appendChild(orderIdRow);
+}
+
+
+// ---- 提供方法の選択 ----
+function selectMethod(value) {
+  method = value;
+
+  optionEls.eatin.classList.toggle("checked", value === "eatin");//value = eatin の場合：イートインに"checked"を付ける
+  optionEls.takeout.classList.toggle("checked", value === "takeout");//テイクアウトの"checked"を外す
+
+  // イートインの時だけ人数入力(peopleRow)を表示する
+  peopleRow.classList.toggle("visible", value === "eatin");//value = eatin の場合："visible"を付ける＝表示する
+
+  updateConfirmButton();
+}
+selectMethod(method);
+//optionEls.eatin.addEventListener("click", () => selectMethod("eatin"));
+//optionEls.takeout.addEventListener("click", () => selectMethod("takeout"));
+
+// ---- 人数の増減(1人〜) ----
+document.getElementById("people-minus").addEventListener("click", () => {
+  if (peopleCount > 1) {
+    peopleCount -= 1;
+    peopleValueEl.textContent = peopleCount;
+  }
+});
+
+document.getElementById("people-plus").addEventListener("click", () => {
+  peopleCount += 1;
+  peopleValueEl.textContent = peopleCount;
+});
+
+// ---- 注文確定ボタンの有効/無効(提供方法が選ばれていないと押せない) ----
+function updateConfirmButton() {
+  confirmBtn.disabled = method === null;
+}
+
+// ---- 戻るボタン: 商品選択画面に戻る ----
+document.getElementById("back-btn").addEventListener("click", () => {
+  window.location.href = "menu.html" + window.location.search;
+});
+
+
+
+// ---- 注文確定: 提供方法・人数を保存して次の画面(注文完了/トラッキング)へ ----
+confirmBtn.addEventListener("click", async() => {
+  const orderInfo = {
+    method,//method:method
+    people: method === "eatin" ? peopleCount : null,
+  };
+  sessionStorage.setItem("orderInfo", JSON.stringify(orderInfo));//変換して保存
+
+  //POST　API
+  let data
+  try {
+    data =await request('/api/customer/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_type: method === "eatin" ? "EAT_IN" : "TAKE_OUT",
+        seat_id: method === "eatin" ? Number(seatId) : null,
+        people: method === "eatin" ? peopleCount : null,
+        cart: cart
+      })
+    });
+
+    const eventSource = new EventSource(
+      `/api/customer/order/events?order_id=${data.order_id}`
+    );
+
+    eventSource.onmessage = (event) => {
+      const order = JSON.parse(event.data);
+
+      if (order.order_status === "paid") {
+        eventSource.close();
+        window.location.href = "tracking.html";
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("支払い状況の通知でエラーが発生しました:", error);
+    };
+
+    sessionStorage.setItem("orderId", String(data.order_id));
+   
+  } catch(err){
+    console.error(err);
+    return;
+  }
+
+  console.log("注文情報:", orderInfo, "カート:", cart);
+
+  //支払い案内
+  orderForm.style.display = "none";//注文フォームをけす。
+  paymentView.style.display = "block";//逆に支払い画面を表示
+  renderPaymentTable(data);
+  
+});
+
+
+renderSummary();

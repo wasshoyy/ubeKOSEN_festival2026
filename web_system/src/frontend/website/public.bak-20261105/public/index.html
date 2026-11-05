@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b10">
+  <meta name="description" content="研究室を模した、実験とスープを楽しむラボカフェ。">
+  <title>LAB. — Research Cafe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- INTRO ANIMATION: replace images/character-1.svg etc. with your own photos. -->
+  <div class="intro" id="intro" aria-label="LAB cafe introduction">
+    <div class="intro-grid"></div>
+    <div class="intro-mark"><span class="intro-cross">+</span><span class="intro-label">SOUP / IDEAS / COMMUNITY</span></div>
+    <div class="intro-showcase">
+      <div class="intro-characters" aria-label="3 characters">
+        <img class="intro-character character-one" src="images/カニ鍋.png" alt="キャラクター1">
+        <img class="intro-character character-two" src="images/おたまツインズ.png" alt="キャラクター2">
+        <img class="intro-character character-three" src="images/シェフ.png" alt="キャラクター3">
+      </div>
+      <h1 class="intro-group-name">SECRET SOUP LAB<span>.</span></h1>
+      <p class="intro-caption mono">ロボットと支え合う社会。我々の研究室も共同研究を行う一つである。</p>
+    </div>
+    <div class="intro-bottom mono"><span>WELCOME</span><span>SOUP LAB.</span><span>EST. 2026</span></div>
+  </div>
+
+  <div class="site-shell" id="siteShell">
+    <header class="site-header">
+      <a class="brand" href="#home" data-page="home" aria-label="LAB home"><span class="brand-symbol">L<span>+</span></span><span class="brand-word">LAB<span>.</span><small>SEACRET SOUP</small></span></a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#home" data-page="home" data-i18n="navHome">ホーム</a>
+        <a href="#about" data-page="members" data-i18n="navMembers">メンバー紹介</a>
+        <a href="#soup" data-page="soup" data-i18n="navSoup">スープ紹介</a>
+        <a href="#news" data-page="news" data-i18n="navNews">ニュース</a>
+        <a href="#access" data-page="access" data-i18n="navAccess">アクセス</a>
+      </nav>
+      <label class="language-select"><span class="mono">LANG</span>
+        <select id="language" aria-label="表示言語" disabled>
+          <option value="ja" selected>日本語</option>
+        </select>
+      </label>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation"><span></span><span></span></button>
+    </header>
+
+    <main>
+      <section class="page active" id="page-home" data-page-content="home">
+        <section class="hero" id="home">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="status-dot"></span><span data-i18n="heroEyebrow">FOOD × SCIENCE × COMMUNITY</span></p>
+            <h1 data-i18n="heroTitle">好奇心を、<br><em>ひとさじ。</em></h1>
+            <p class="hero-description" data-i18n="heroText">研究室のような空間で、スープを味わい、アイデアを交換する。LAB.は、日常に小さな発見をつくるカフェです。</p>
+            <div class="hero-actions"><a class="button button-primary" href="#soup" data-page="soup"><span data-i18n="exploreSoup">スープを研究する</span><b>↗</b></a><a class="text-link" href="#about" data-page="home" data-scroll="about"><span data-i18n="discoverLab">LAB.について</span><span>↓</span></a></div>
+            <div class="hero-meta mono"><span>01 / DISCOVER</span><span>OPEN DAILY — 11:00–19:00</span></div>
+          </div>
+          <div class="hero-visual">
+            <div class="visual-top mono"><span>FIG. 001</span><span>SOUP STUDY / VOL. 01</span></div>
+            <div class="soup-stage">
+              <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+              <div class="soup-bowl"><div class="soup-liquid"><span class="oil oil-one"></span><span class="oil oil-two"></span><span class="herb herb-one"></span><span class="herb herb-two"></span><span class="herb herb-three"></span></div></div>
+              <div class="crosshair crosshair-a">+</div><div class="crosshair crosshair-b">+</div>
+              <div class="callout callout-left mono"><span>pH</span><b>6.8</b><i></i></div>
+              <div class="callout callout-right mono"><span>TEMP.</span><b>72°C</b><i></i></div>
+              <div class="visual-caption mono"><span>SPECIMEN: SOUP</span><span>100% GOOD MOOD</span></div>
+            </div>
+            <div class="vertical-note mono">A LITTLE EXPERIMENT, EVERY DAY</div>
+          </div>
+          <div class="hero-bottom-line"><span></span><span class="mono">SCROLL TO EXPLORE ↓</span></div>
+        </section>
+
+        <section class="manifesto section-wrap" id="about">
+          <div class="section-index mono">[ 001 — CONCEPT ]</div>
+          <img class="character-accent accent-one" src="images/シェフ.png" alt="" aria-hidden="true"><div class="manifesto-content"><p class="eyebrow" data-i18n="conceptLabel">OUR PHILOSOPHY</p><h2 data-i18n="conceptTitle">おいしさの先に、<br>まだ知らない発見を。</h2><p data-i18n="conceptText1">食材を観察し、組み合わせを試し、誰かと感想を交わす。ここは、食べることから始まる小さな研究室。正解よりも好奇心を大切にしています。</p><div class="middle-photo">
+           <img src="images/シェフ.png" alt="シェフの写真">
+           </div>
+          <p calss="concept-text2" data-i18n="conceptText2">ああああ</p> </div>
+          <div class="concept-stamp"><span>STAY</span><b>CURIOUS</b><span>EVERY DAY / LAB.</span></div>
+        </section>
+
+        <section class="feature-band">
+          <img class="character-accent accent-two" src="images/カニ鍋.png" alt="" aria-hidden="true">
+          <div class="section-wrap feature-heading"><div><p class="eyebrow" data-i18n="todayLabel">FROM THE LAB</p><h2 data-i18n="todayTitle">ラボの最新情報</h2></div><span class="mono">UPDATE / 2026</span></div>
+          <div class="news-layout section-wrap">
+            <div class="news-feature"><div class="news-image image-poster"><span class="poster-code mono">NEWS_026</span><div class="poster-art"><div class="poster-ring"></div><div class="poster-ring small"></div><span>NEW<br>BLEND</span></div><span class="poster-foot mono">SEASONAL RECIPE / 01</span></div><div class="news-info"><div class="news-meta mono"><time>2026.11.04</time><span class="tag">MENU</span></div><h3 data-i18n="news1Title">秋の研究スープ、試作スタート。</h3><p data-i18n="news1Text">旬の野菜とスパイスを組み合わせた季節限定メニューを開発中。完成をお楽しみに。</p></div></div>
+            <div class="news-list">
+              <article class="news-row"><div class="news-meta mono"><time>2026.11.03</time><span class="tag">EVENT</span></div><h3 data-i18n="news2Title">第3回「スープの実験室」を開催します</h3><p data-i18n="news2Text">味の組み合わせを自由に試す、参加型のミニワークショップ。</p><span class="row-arrow">↗</span></article>
+              <article class="news-row"><div class="news-meta mono"><time>2026.10.30</time><span class="tag">INFO</span></div><h3 data-i18n="news3Title">LAB.のウェブサイトを公開しました</h3><p data-i18n="news3Text">ラボの日々の活動やメニュー情報をこちらからお届けします。</p><span class="row-arrow">↗</span></article>
+              <a class="button button-outline" href="#news" data-page="news"><span data-i18n="moreNews">ニュースをもっと見る</span><b>↗</b></a>
+            </div>
+          </div>
+        </section>
+
+        <section class="access-teaser section-wrap" id="access-teaser"><img class="character-accent accent-three" src="images/おたまツインズ.png" alt="" aria-hidden="true">
+          <div class="access-copy"><p class="eyebrow" data-i18n="accessLabel">FIND YOUR LAB</p><h2 data-i18n="accessTitle">いつもの日常に、<br><em>小さな実験を。</em></h2><p data-i18n="accessText">ふらっと立ち寄って、ひと息ついて。あなたの好奇心を持ってきてください。</p><a class="button button-primary" href="#access" data-page="access"><span data-i18n="viewAccess">アクセスを見る</span><b>↗</b></a></div>
+          <div class="map-card"><div class="map-grid"></div><svg viewBox="0 0 440 270" role="img" aria-label="Abstract map"><path d="M-20 70 L130 125 L220 60 L470 115 M-10 220 L110 160 L240 205 L460 175 M60 -10 L100 280 M210 -10 L250 280 M350 -10 L320 280" fill="none" stroke="currentColor" stroke-width="1"/><path d="M30 30 L160 70 L180 140 L300 125 L410 230" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5 6"/></svg><div class="map-pin"><span>+</span></div><div class="map-label mono">LAB. / FIND US</div></div>
+        </section>
+
+        <section class="instagram-band"><div><span class="insta-icon">◎</span><p class="eyebrow" data-i18n="followLabel">FOLLOW OUR EXPERIMENTS</p><h2 data-i18n="followTitle">ラボの日常をのぞく。</h2></div><a class="insta-link" href="https://www.instagram.com/5s_ube_soup?utm_source=ig_web_button_share_sheet&xtok=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer"><span data-i18n="instagram">Instagram を見る</span><b>↗</b></a></section>
+      </section>
+
+      <section class="page subpage" id="page-members" data-page-content="members">
+        <div class="subpage-hero"><img class="subpage-character" src="images/カニ鍋.png" alt="" aria-hidden="true"><p class="eyebrow mono">[ 002 — THE TEAM ]</p><h1 data-i18n="membersTitle">メンバー紹介<span>.</span></h1><p data-i18n="membersLead">好奇心を持ち寄る、LAB.の研究員たち。</p></div>
+        <section class="section-wrap member-grid">
+          <article class="member-card"><div class="member-portrait portrait-a"><span class="portrait-symbol">01</span><div class="portrait-shape"></div></div><p class="mono member-role">HEAD RESEARCHER / SOUP</p><h2 data-i18n="member1Name">ミナ — スープ担当</h2><p data-i18n="member1Text">素材の個性を見つけて、驚きのある味にするのが得意。</p></article>
+          <article class="member-card"><div class="member-portrait portrait-b"><span class="portrait-symbol">02</span><div class="portrait-shape"></div></div><p class="mono member-role">COMMUNITY / IDEAS</p><h2 data-i18n="member2Name">レン — コミュニティ担当</h2><p data-i18n="member2Text">人とアイデアが出会う場づくりを研究中。</p></article>
+          <article class="member-card"><div class="member-portrait portrait-c"><span class="portrait-symbol">03</span><div class="portrait-shape"></div></div><p class="mono member-role">DESIGN / RECORD</p><h2 data-i18n="member3Name">ユイ — 記録・デザイン担当</h2><p data-i18n="member3Text">ラボで生まれる小さな発見を、形にして記録する。</p></article>
+        <article class="member-card"><div class="member-portrait portrait-c"><span class="portrait-symbol">03</span><div class="portrait-shape"></div></div><p class="mono member-role">DESIGN / RECORD</p><h2 data-i18n="member4Name">ユイ — 記録・デザイン担当</h2><p data-i18n="member4Text">ラボで生まれる小さな発見を、形にして記録する。</p></article>
+        </section>
+        <div class="section-wrap note-box"><span class="mono">NOTE_001</span><p data-i18n="memberNote">※メンバー名・プロフィールはサンプルです。実際のスタッフ情報に差し替えてください。</p></div>
+      </section>
+
+      <section class="page subpage" id="page-soup" data-page-content="soup">
+        <div class="subpage-hero"><img class="subpage-character" src="images/おたまツインズ.png" alt="" aria-hidden="true"><p class="eyebrow mono">[ 003 — SOUP STUDIES ]</p><h1 data-i18n="soupTitle">スープ紹介<span>.</span></h1><p data-i18n="soupLead">季節と好奇心から生まれる、今日の研究成果。</p></div>
+        <section class="section-wrap soup-grid">
+          <article class="soup-card"><div class="soup-card-art soup-art-a"><div class="mini-bowl"><span></span></div><label class="mono">SPECIMEN 001</label></div><div class="soup-card-info"><div class="soup-card-top"><h2 data-i18n="soup1Name">ローストトマト</h2><span class="price">¥200</span></div><p data-i18n="soup1Text">甘みを引き出したトマトに、香ばしいハーブを重ねた定番の一杯。</p><span class="soup-tags mono">TOMATO / HERB / WARM</span></div></article>
+          <article class="soup-card"><div class="soup-card-art soup-art-b"><div class="mini-bowl"><span></span></div><label class="mono">SPECIMEN 002</label></div><div class="soup-card-info"><div class="soup-card-top"><h2 data-i18n="soup2Name">グリーンポタージュ</h2><span class="price">¥200</span></div><p data-i18n="soup2Text">青菜と豆のやさしいコク。仕上げのレモンがアクセント。</p><span class="soup-tags mono">GREENS / BEANS / FRESH</span></div></article>
+          <article class="soup-card"><div class="soup-card-art soup-art-c"><div class="mini-bowl"><span></span></div><label class="mono">SPECIMEN 003</label></div><div class="soup-card-info"><div class="soup-card-top"><h2 data-i18n="soup3Name">きのこのクリーム</h2><span class="price">¥200</span></div><p data-i18n="soup3Text">数種類のきのこの香りを閉じ込めた、深みのあるクリームスープ。</p><span class="soup-tags mono">MUSHROOM / CREAM / DEEP</span></div></article>
+        </section>
+        <div class="section-wrap note-box"><span class="mono">MENU_INFO</span><p data-i18n="soupNote">※メニュー・価格はサンプルです。アレルギー情報や販売状況は実際の内容に更新してください。</p></div>
+      </section>
+
+      <section class="page subpage" id="page-news" data-page-content="news">
+        <div class="subpage-hero"><img class="subpage-character" src="images/シェフ.png" alt="" aria-hidden="true"><p class="eyebrow mono">[ 004 — LAB LOG ]</p><h1 data-i18n="newsPageTitle">ニュース<span>.</span></h1><p data-i18n="newsPageLead">LAB.の最新情報、イベント、研究記録。</p></div>
+        <section class="section-wrap full-news-list">
+          <article class="full-news"><div class="news-meta mono"><time>2026.11.04</time><span class="tag">MENU</span></div><div><h2 data-i18n="news1Title">秋の研究スープ、試作スタート。</h2><p data-i18n="news1Text">旬の野菜とスパイスを組み合わせた季節限定メニューを開発中。完成をお楽しみに。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.11.03</time><span class="tag">EVENT</span></div><div><h2 data-i18n="news2Title">第3回「スープの実験室」を開催します</h2><p data-i18n="news2Text">味の組み合わせを自由に試す、参加型のミニワークショップ。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.10.30</time><span class="tag">INFO</span></div><div><h2 data-i18n="news3Title">LAB.のウェブサイトを公開しました</h2><p data-i18n="news3Text">ラボの日々の活動やメニュー情報をこちらからお届けします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.10.15</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news4Title">オープンラボ・デーの記録</h2><p data-i18n="news4Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.08.18</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news5Title">オープンラボ・デーの記録</h2><p data-i18n="news5Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.08.11</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news6Title">オープンラボ・デーの記録</h2><p data-i18n="news6Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.06.30</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news7Title">オープンラボ・デーの記録</h2><p data-i18n="news7Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.06.25</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news8Title">オープンラボ・デーの記録</h2><p data-i18n="news8Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.06.22</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news9Title">オープンラボ・デーの記録</h2><p data-i18n="news9Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+          <article class="full-news"><div class="news-meta mono"><time>2026.06.19</time><span class="tag">COMMUNITY</span></div><div><h2 data-i18n="news10Title">オープンラボ・デーの記録</h2><p data-i18n="news10Text">たくさんのアイデアと感想が集まった一日をレポートします。</p></div><span class="row-arrow">↗</span></article>
+        </section>
+      </section>
+
+      <section class="page subpage" id="page-access" data-page-content="access">
+        <div class="subpage-hero"><img class="subpage-character" src="images/おたまツインズ.png" alt="" aria-hidden="true"><p class="eyebrow mono">[ 005 — LOCATION ]</p><h1 data-i18n="accessPageTitle">アクセス<span>.</span></h1><p data-i18n="accessPageLead">好奇心を持って、気軽にお越しください。</p></div>
+        <section class="access-page-grid section-wrap">
+          <div class="large-map">
+            <img src="images/map-photo.jpg" alt="LAB. MAP" class="lab-map-photo">
+          </div>
+          <div class="access-details">
+            <p class="eyebrow" data-i18n="visitLabel">VISIT THE LAB</p>
+            <h2>LAB<span>.</span> Research Cafe</h2>
+            <dl>
+              <div><dt data-i18n="addressLabel">住所</dt><dd data-i18n="addressValue">〒000-0000<br>広島県〇〇市〇〇 1-2-3</dd></div>
+              <div><dt data-i18n="hoursLabel">営業時間</dt><dd data-i18n="hoursValue">11:00–19:00<br>定休日：水曜日</dd></div>
+              <div><dt data-i18n="transportLabel">アクセス</dt><dd data-i18n="transportValue">〇〇駅から徒歩5分</dd></div>
+            </dl>
+            <a class="button button-outline" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer"><span data-i18n="openMap">地図を開く</span><b>↗</b></a>
+            <p class="small-note" data-i18n="accessNote">※住所・営業時間は仮情報です。公開前に実際の情報へ変更してください。</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="footer-top"><a class="brand footer-brand" href="#home" data-page="home"><span class="brand-symbol">L<span>+</span></span><span class="brand-word">LAB<span>.</span><small>RESEARCH CAFE</small></span></a><p data-i18n="footerLine">好奇心を持ち寄る、小さな研究室。</p><a class="footer-instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a></div><div class="footer-bottom mono"><span>© 2026 LAB. RESEARCH CAFE</span><span>MADE FOR THE CURIOUS.</span><a href="#home" data-page="home">BACK TO TOP ↑</a></div></footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
