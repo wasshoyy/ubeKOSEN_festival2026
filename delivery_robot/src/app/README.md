@@ -5,3 +5,4 @@
 - jinja2
 - bleak
 - pydantic
+- pybricks-cli

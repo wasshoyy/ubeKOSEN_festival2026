@@ -43,7 +43,9 @@ async def receive_sse():
                             order_id = payload["order_id"]
                             table_id = payload["table_id"]
                             
-                            print("assignment:", payload)
+                            print("robot_id:", robot_id)
+                            print("order_id:", order_id)
+                            print("table_id:", table_id)
 
                             spike_ble.assignment(robot_id, table_id)
 
@@ -131,4 +133,4 @@ async def get_states():
 
 @app.post("/api/command")
 async def commandRobot(command: RobotCommand):
-    await spike_ble.addCommand(command.robot_id, command.stop)
+    spike_ble.addCommand(command.robot_id, command.stop)
