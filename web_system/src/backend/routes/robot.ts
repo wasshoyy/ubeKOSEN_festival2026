@@ -20,6 +20,7 @@ router.get("/events", (req, res) => {
 setInterval(() => {
     console.log("1秒おきにassignment送信");
     notifyRobotAssignment(0, 2, 0);
+    notifyRobotAssignment(1, 2, 0);
 }, 1000);
 
 

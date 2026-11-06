@@ -1,21 +1,13 @@
 from pybricks.hubs import PrimeHub
-from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSensor
-from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
-from pybricks.robotics import DriveBase
-from pybricks.tools import wait, StopWatch, Matrix, run_task, multitask
-from Ackermann import drive, exit, run, speed, set_target_length, reset_mileage, get_mileage
-from BLEradio1 import communication, update_state, STATE, check_arrived_table, check_arrived_end, get_table_id, set_table_id
-from num import NUM
+from pybricks.tools import Matrix, wait, run_task, multitask
+from pybricks.parameters import Icon
+from pybricks.messaging import BLERadio
+from usys import stdin, stdout
+from uselect import poll
+from micropython import kbd_intr
 import course
 
 hub = PrimeHub()
-
-ultrasonic_sensor = UltrasonicSensor(Port.D)
-
-hub.system.set_stop_button((Button.LEFT, Button.RIGHT))
-# hub.system.set_stop_button(None)
-
-hub.display.orientation(Side.LEFT)
 
 SMILE = Matrix(
     [
@@ -27,145 +19,205 @@ SMILE = Matrix(
     ]
 )
 
-ARROW = Matrix(
-    [
-        [0, 0, 100, 0, 0],
-        [0, 100, 0, 0, 0],
-        [100, 100, 100, 100, 100],
-        [0, 100, 0, 0, 0],
-        [0, 0, 100, 0, 0],
-    ]
-)
+SPIKE_NUM = 2
 
-class State:
-    Waiting_order = 0
-    Ready = 1
-    Running = 2
-    Waiting_customer = 3
-    Send_back = 5
+class COMMAND_CENTER_SIGNAL:
+    STOP = 0
+    ASSIGN = 1
+    MOVE_RESPONSE = 2
+    READY = 3
+
+class CLIENT_SIGNAL:
+    STATE = 0
+    MOVE_REQUEST = 1
+
+class STATE:
+    WAITING_ORDER = 0
+    READY = 1
+
+observe_channels = [i for i in range(SPIKE_NUM)]
+radio = BLERadio(broadcast_channel=255, observe_channels=observe_channels)
+
+kbd_intr(-1)
+keyboard = poll()
+keyboard.register(stdin)
+
+stop_command_list = [[255 for _ in range(3)] for _ in range(SPIKE_NUM + 1)]
+assign_command_list = [[255 for _ in range(3)] for _ in range(SPIKE_NUM)]
+ready_command_list = [[255 for _ in range(3)] for _ in range(SPIKE_NUM)]
+move_requests = [None for _ in range(SPIKE_NUM)]
+
+occupied = [None for _ in range(course.CHECK_POINT_NUM + course.TABLE_NUM)]
+reserved = [None for _ in range(course.CHECK_POINT_NUM + course.TABLE_NUM)]
+
+# 各spike_idごとにinner_state, stop, secondを保持
+spike_states = [[STATE.WAITING_ORDER, False, 0] for _ in range(SPIKE_NUM)]
+
+pc_connected = False
+
+def check_point(spike_id):
+    global occupied, reserved
+    
+    point_id = move_requests[spike_id]
+
+    if occupied[point_id] == spike_id:
+        return True
+    
+    if reserved[point_id] is None:
+        reserved[point_id] = spike_id
+    
+    if reserved[point_id] == spike_id:
+        if occupied[point_id] is None:
+            occupied[point_id] = spike_id
+            reserved[point_id] = None
+            return True
+    
+    return False
+
+async def from_pc():
+    global pc_connected
+    while True:
+        # PCからのデータ待ち
+        while not keyboard.poll(0):
+            # PC側に「受信可能」と知らせる
+            stdout.buffer.write(b"rdy")
+        
+            await wait(100)
+
+        symbol = stdin.buffer.read(3)
+        int_list = list(symbol)
+
+        successful = int_list[0]
+        if successful == 200:
+            pc_connected = True
+            break
+
+    global stop_command_list, assign_command_list, ready_command_list, move_requests
+    while True:
+        hub.display.icon(SMILE)
+        # PCからのデータ待ち
+        while not keyboard.poll(0):
+            await wait(10)
+
+        symbol = stdin.buffer.read(3)
+        int_list = list(symbol)
+
+        if len(int_list) != 3:
+            continue
+        
+        spike_id = int_list[1]
+
+        if int_list[0] == COMMAND_CENTER_SIGNAL.STOP:
+            print("STOP RX:", int_list)
+            if spike_id == 255:
+                stop_command_list[SPIKE_NUM] = int_list
+            else:
+                stop_command_list[spike_id] = int_list
+        elif int_list[0] == COMMAND_CENTER_SIGNAL.ASSIGN:
+            print("ASSIGN RX:", int_list)
+            assign_command_list[spike_id] = int_list
+        elif int_list[0] == COMMAND_CENTER_SIGNAL.READY:
+            ready_command_list[spike_id] = int_list
+        elif int_list[0] == COMMAND_CENTER_SIGNAL.MOVE_RESPONSE:
+            point_id = int_list[2]
+            move_requests[spike_id] = point_id
+
+async def from_spike():
+    global spike_states, move_requests, assign_command_list, occupied, reserved
+    while True:
+        for spike_id in range(SPIKE_NUM):
+            data = radio.observe(spike_id)
+
+            if data is None:
+                continue
+
+            syg_type = data[0]
+
+            if syg_type == CLIENT_SIGNAL.STATE:
+                free_point_id = data[1]
+                stop = data[2]
+                inner_state = data[3]
+
+                if free_point_id != 255:
+                    occupied[free_point_id] = None
+                    reserved[free_point_id] = None
+
+                # 登録時はsecond = 0
+                spike_states[spike_id] = [inner_state, stop, 0]
+                if inner_state != STATE.WAITING_ORDER:
+                    assign_command_list[spike_id][2] = 255
+            elif syg_type == CLIENT_SIGNAL.MOVE_REQUEST:
+                point_id = data[1]
+                move_requests[spike_id] = point_id
+        
+        await wait(10)
 
 
-state = State.Waiting_order
+async def forget():
+    while True:
+        for spike_id in range(SPIKE_NUM):
+            if spike_states[spike_id][2] < 1000:
+                spike_states[spike_id][2] += 10
+        await wait(10)
 
-async def check_soup():
-    d = await ultrasonic_sensor.distance()
-    have_soup = (d <= 100)
+async def to_pc():
+    while True:
+        if pc_connected == False:
+            await wait(1000)
+            continue
+        
+        for spike_id in range(SPIKE_NUM):
+            inner_state, stop, second = spike_states[spike_id]
+            connected = 1
+            if second >= 1000:
+                connected = 0
+            
+            stop = 1 if stop else 0
+            
+            stdout.buffer.write(bytes([200, spike_id, connected, inner_state, stop]))
+            await wait(10)
+        await wait(50)
 
-    return have_soup
+async def to_spike():
+    while True:
+        # STOP
+        for spike_id in range(SPIKE_NUM + 1):
+            command = stop_command_list[spike_id]
+            await radio.broadcast(command)
+            
+        # ASSIGN
+        for spike_id in range(SPIKE_NUM):
+            command = assign_command_list[spike_id]
+            await radio.broadcast(command)
+
+        # MOVE_REQUEST
+        for spike_id in range(SPIKE_NUM):
+            if move_requests[spike_id] is None:
+                continue
+
+            command = [
+                COMMAND_CENTER_SIGNAL.MOVE_RESPONSE,
+                spike_id,
+                move_requests[spike_id],
+                check_point(spike_id)
+            ]
+            await radio.broadcast(command)
+        
+        # READY
+        for spike_id in range(SPIKE_NUM):
+            command = ready_command_list[spike_id]
+            await radio.broadcast(command)
+        
+        await wait(100)
+
+
+async def reception():
+    await multitask(from_pc(), from_spike())
+
+async def transmission():
+    await multitask(to_pc(), to_spike(), forget())
 
 async def main():
-    global state
-    hub.display.icon(SMILE)
-    
-    hub.display.icon(NUM[1])
+    await multitask(reception(), transmission())
 
-    while True:
-        table_id = get_table_id()
-        """
-        if table_id is None:
-            hub.display.off()
-        else:
-            hub.display.number(table_id)
-        """
-
-        await wait(20)
-
-        if state == State.Waiting_order:
-            hub.display.icon(SMILE)
-            # PCからの席指定待ち状態
-            hub.light.on(Color.VIOLET)
-            await run(False)
-            reset_mileage()
-
-            table_id = 0
-            on_left = False
-            on_right = False
-            while not Button.CENTER in hub.buttons.pressed():
-                hub.display.icon(NUM[table_id])
-
-                if Button.LEFT in hub.buttons.pressed():
-                    if not on_left:
-                        if table_id < course.TABLE_NUM - 1:
-                            table_id += 1
-                        on_left = True
-                else:
-                    on_left = False
-                
-                if Button.RIGHT in hub.buttons.pressed():
-                    if not on_right:
-                        if table_id > 0:
-                            table_id -= 1
-                        on_right = True
-                else:
-                    on_right = False
-
-                await wait(10)
-            
-            if table_id is not None:
-                set_table_id(table_id)
-                state = State.Ready
-            else:
-                await wait(100)
-        elif state == State.Ready:
-            hub.display.icon(SMILE)
-            # スープ載せられ待ち状態
-            hub.light.on(Color.YELLOW)
-            await run(False)
-            
-            if await check_soup() == True and Button.CENTER in hub.buttons.pressed():
-                state = State.Running
-        elif state == State.Running:
-            # ライントレースで配膳中
-            hub.light.on(Color.BLUE)
-            await run(True)
-            
-            if check_arrived_table():
-                state = State.Waiting_customer
-                hub.light.on(Color.GREEN)
-        elif state == State.Waiting_customer:
-            # お客さんのところまでたどり着き、返却され待ち状態
-            await run(False)
-
-            br = False
-            while True:
-                if not (await check_soup()):
-                    hub.display.icon(ARROW)
-                    for _ in range(10):
-                        await wait(50)
-                        if Button.CENTER in hub.buttons.pressed():
-                            br = True
-                    if br:
-                        break
-                    
-                    hub.light.off()
-
-                    for _ in range(10):
-                        await wait(50)
-                        if Button.CENTER in hub.buttons.pressed():
-                            br = True
-                    if br:
-                        break
-                    
-                    hub.light.on(Color.GREEN)
-                
-                await wait(100)
-
-            state = State.Send_back
-        elif state == State.Send_back:
-            hub.display.icon(SMILE)
-            # 帰宅中
-            hub.light.on(Color.BLUE)
-            await run(True)
-            
-            if check_arrived_end():
-                state = State.Waiting_order
-
-async def multi():
-    await multitask(main(), communication(), drive())
-
-try:
-    run_task(multi())
-
-except SystemExit:
-    # 3秒以内を目指す
-    exit()
+run_task(main())
