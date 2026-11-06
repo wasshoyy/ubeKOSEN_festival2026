@@ -3,8 +3,8 @@ from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSenso
 from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, Matrix, run_task, multitask
-from Ackermann import linetrace, exit, run, speed, set_target_length, reset_mileage, get_mileage
-from BLEradio1 import reception
+from Ackermann import drive, exit, run, speed, set_target_length, reset_mileage, get_mileage
+from BLEradio1 import communication, update_state, STATE, check_arrived_table, check_arrived_end, get_table_id
 
 hub = PrimeHub()
 
@@ -37,14 +37,14 @@ ONE = Matrix(
 )
 
 class State:
-    Instruction_wait = 0
-    Soup_wait = 1
-    Run = 2
-    Customer_wait = 3
-    Turn = 4
+    Waiting_order = 0
+    Ready = 1
+    Running = 2
+    Waiting_customer = 3
     Send_back = 5
 
-state = State.Instruction_wait
+
+state = State.Waiting_order
 
 have_soup = False
 async def check_soup():
@@ -53,28 +53,29 @@ async def check_soup():
         await wait(10)
         d = await ultrasonic_sensor.distance()
         have_soup = (d <= 100)
+        """
         # デモ用
         if have_soup:
             hub.light.on(Color.RED)
         else:
             hub.light.on(Color.GREEN)
+        """
 
 async def main():
     global state
     hub.display.icon(SMILE)
-    run(True)
     
-    # デモ用
     hub.display.icon(ONE)
     while True:
-        await wait(1)
+        table_id = get_table_id()
+        if table_id is None:
+            hub.display.off()
+        else:
+            hub.display.number(table_id)
+        
+        await wait(20)
 
-        run(True)
-        reset_mileage()
-
-        """
-        table_id = 0
-        if state == State.Instruction_wait:
+        if state == State.Waiting_order:
             # PCからの席指定待ち状態
             hub.light.on(Color.VIOLET)
             run(False)
@@ -83,58 +84,46 @@ async def main():
             # response, table_id = await reception()
             # hub.display.number(table_id)
             
-            set_target_length(6150)
+            # set_target_length(length_to_table(table_id))
 
             # if response == True:
-            await wait(1000)
-            state = State.Soup_wait
-        elif state == State.Soup_wait:
+
+            if table_id is not None:
+                state = State.Ready
+            else:
+                await wait(100)
+        elif state == State.Ready:
             # スープ載せられ待ち状態
             hub.light.on(Color.YELLOW)
             run(False)
             
             if have_soup == True and Button.CENTER in hub.buttons.pressed():
-                state = State.Run
-        elif state == State.Run:
+                state = State.Running
+        elif state == State.Running:
             # ライントレースで配膳中
             hub.light.on(Color.BLUE)
             run(True)
             
-            # await multitask(change_velocity(), linetrace())
-            
-            if get_mileage() >= 6150:
-                state = State.Customer_wait
-        elif state == State.Customer_wait:
+            if check_arrived_table():
+                state = State.Waiting_customer
+        elif state == State.Waiting_customer:
             # お客さんのところまでたどり着き、返却され待ち状態
             hub.light.on(Color.YELLOW)
             run(False)
-            reset_mileage()
 
             if have_soup == False and Button.CENTER in hub.buttons.pressed():
-                state = State.Turn
-        elif state == State.Turn:
-            # 帰宅レーンに移動中
-            hub.light.on(Color.RED)
-            run(True)
-
-            # 今は仮でライントレース
-            # await multitask(change_velocity(), linetrace())
-            
-            state = State.Send_back
+                state = State.Send_back
         elif state == State.Send_back:
             # 帰宅中
             hub.light.on(Color.GREEN)
             run(True)
-
-            # await multitask(change_velocity(), linetrace())
             
-            if get_mileage() >= 6150:
-                state = State.Instruction_wait
-        """
+            if check_arrived_end():
+                state = State.Waiting_order
 
 async def multi():
-    await multitask(main(), reception(), linetrace(), check_soup())
-    # await multitask(reception(), linetrace(), check_soup())
+    await multitask(main(), communication(), drive(), check_soup())
+    # await multitask(communication(), drive(), check_soup())
 
 try:
     run_task(multi())

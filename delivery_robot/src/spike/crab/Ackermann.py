@@ -3,21 +3,49 @@ from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSenso
 from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, run_task, multitask
-from BLEradio1 import get_state, reception
+from BLEradio1 import get_state, update_point, check_main_way, get_point_id_now, get_wait_front, get_all_stop, get_my_stop
 
+hub = PrimeHub()
 motor_drive = Motor(Port.A)
 motor_direction = Motor(Port.C)
-color_sesor = ColorSensor(Port.E)
+color_sensor = ColorSensor(Port.E)
 
 running = False
+arrive = False
+stop = False
+ready = True
 
-def run(tf):
-    global running
-    running = tf
+drive_start = False
+
+async def run(tf):
+    global running, stop, drive_start
+
+    stop = get_state()
+
+    run_next = tf and ready and not stop and not arrive
+
+    if running != run_next:
+        print(
+            "run:", tf,
+            "ready:", ready,
+            "stop:", stop,
+            "arrive:", arrive,
+            "wait_front:", get_wait_front()
+        )
+    
+    if run_next and not running:
+        running = True
+        await wait(500)
+        drive_start = True
+    elif not run_next:
+        drive_start = False
+    
+    running = run_next
 
 angle_max = 120
 angle_min = -180
 
+"""
 # 最高速度verのパラメータたち
 SPEED_MAX = 1000
 speed = SPEED_MAX
@@ -38,13 +66,14 @@ i_gain = 0.2
 d_gain = 40.0
 brake_gain = 100
 brake_delta = 1
-angle_delta_max = 3
+angle_delta_max = 5
 
-"""
 
-black = 20.0
-white = 60.0
-target_reflection = (black + white) / 2.0
+BLACK = 20.0
+WHITE = 60.0
+target_reflection = (BLACK + WHITE) / 2.0
+
+main_way = True
 
 RINGBUFF_MAX = 30
 
@@ -80,6 +109,15 @@ async def init():
     motor_direction.reset_angle(0)
     await wait(10)
 
+def reset_pid():
+    global ref_old, ref_total, angle
+
+    ref_old = 0
+    ref_total = 0
+    angle = motor_direction.angle()
+
+    ringbuff_init()
+
 target_length = 6150
 def set_target_length(length):
     global target_length
@@ -93,74 +131,142 @@ def reset_mileage():
 def get_mileage():
     return mileage
 
-async def linetrace():
-    global speed, mileage, running
+
+ref_old = 0
+ref_total = 0
+angle = 0
+brake_now = 0
+drive_angle_old = 0
+
+def linetrace(reflection):
+    global ref_old, ref_total, angle, speed, brake_now, drive_angle_old, mileage, arrive
+
+    # black <= reflection <= white
+
+    ref_now = (reflection - target_reflection) / ((WHITE - BLACK) / 2.0)
+    ref_diff = ref_old - ref_now
+    ref_old = ref_now
+
+    ringbuff_set(ref_now)
+    ref_total += ref_now
+    ref_total -= ringbuff_get(-(RINGBUFF_MAX-1))
+        
+    p = p_gain * ref_now
+    i = i_gain * (ref_total / float(RINGBUFF_MAX))
+    d = d_gain * ref_diff
+
+    target_angle = p + i + d
+
+    if target_angle < 0:
+        target_angle *= abs(angle_min)
+    else:
+        target_angle *= abs(angle_max)
+        
+        
+    target_angle = max(angle_min, min(angle_max, target_angle))
+
+    angle += min(angle_delta_max, max(-angle_delta_max, target_angle - angle))
+    # delta_angle = target_angle - motor_direction.angle()
+    motor_direction.track_target(angle)
+
+
+    if running:
+        speed += min(1, max(-1, SPEED_MAX - speed))
+    else:
+        speed -= min(1, max(-1, speed))
+
+    brake = brake_gain * abs(ref_now)
+    brake_now += max(- brake_delta, min(brake_delta, brake - brake_now))
+
+    if speed - brake_now > 0 and drive_start:
+        motor_drive.run(speed - brake_now)
+    else:
+        motor_drive.run(0)
+    # motor_drive.run(speed)
+
+    drive_angle_now = motor_drive.angle()
+    mileage += drive_angle_now - drive_angle_old
+    drive_angle_old = drive_angle_now
+    if mileage >= target_length:
+        arrive = True
+
+table_now = 0
+
+def blue_func():
+    global mileage, main_way
+    d_table = 500
+    set_target_length(100)
+
+    # print("blue:", mileage, get_point_id_now(), main_way)
+
+    if mileage >= d_table:
+        update_point()
+        main_way = check_main_way()
+        print("changed:", get_point_id_now(), main_way)
+
+    reset_mileage()
+
+main_blue = Color(h=209, s=55, v=28)
+sub_blue = Color(h=216, s=34, v=39)
+
+async def drive():
     await init()
-    ref_old = 0
-    ref_total = 0
-    angle = 0
-    brake_now = 0
-    drive_angle_old = 0
+
+    on_blue = False
+    was_blue = False
+
+    hsv = await color_sensor.hsv(surface=True)
+    diff_blue = abs(hsv.h - main_blue.h)
+    if hsv.s >= 30 and diff_blue <= 30:
+        on_blue = True
+        was_blue = True
+    else:
+        raise SystemExit
+    
     while True:
-        while get_state():
-            motor_drive.run(0)
-            await wait(100)
-        
         await wait(1)
-        # print(motor_direction.angle())
 
-        hsv = await color_sesor.hsv()
-        reflection = float(hsv.v)
+        if not running:
+            await wait(10)
+            motor_drive.stop()
+            continue
 
-        # black <= reflection <= white
-        reflection = max(black, min(white, reflection))
-
-        ref_now = (reflection - target_reflection) / ((white - black) / 2.0)
-        ref_diff = ref_old - ref_now
-        ref_old = ref_now
-
-        ringbuff_set(ref_now)
-        ref_total += ref_now
-        ref_total -= ringbuff_get(-(RINGBUFF_MAX-1))
-        
-        p = p_gain * ref_now
-        i = i_gain * (ref_total / float(RINGBUFF_MAX))
-        d = d_gain * ref_diff
-
-        target_angle = p + i + d
-
-        if target_angle < 0:
-            target_angle *= abs(angle_min)
+        if get_wait_front():
+            set_target_length(100)
         else:
-            target_angle *= abs(angle_max)
-        
-        
-        target_angle = max(angle_min, min(angle_max, target_angle))
+            set_target_length(6150)
 
-        angle += min(angle_delta_max, max(-angle_delta_max, target_angle - angle))
-        # delta_angle = target_angle - motor_direction.angle()
-        motor_direction.track_target(angle)
+        hsv = await color_sensor.hsv(surface=True)
 
-
-        if running:
-            speed += min(5, max(-5, SPEED_MAX - speed))
+        # diff_red = abs(hsv.h - red.h) + abs(hsv.s - red.s)
+        diff_blue = 0
+                    
+        if main_way:
+            diff_blue = abs(hsv.h - main_blue.h)
+            
+            # hsvのvを反射率としてライントレースに用いる
+            linetrace(hsv.v)
         else:
-            speed -= min(5, max(-5, speed))
+            diff_blue = abs(hsv.h - sub_blue.h)
 
-        brake = brake_gain * abs(ref_now)
-        brake_now += max(- brake_delta, min(brake_delta, brake - brake_now))
-
-        if speed - brake_now > 0:
-            motor_drive.run(speed - brake_now)
+            # hsvのsでライントレース
+            linetrace((hsv.s - 50) * 2 / 3 + 40)
+        
+        if hsv.s >= 30 and diff_blue <= 30:
+            on_blue = True
         else:
-            motor_drive.run(0)
-        # motor_drive.run(speed)
+            on_blue = False
+        
+        if on_blue:
+            blue_func()
+        
+        if not on_blue and was_blue:
+            reset_pid()
 
-        drive_angle_now = motor_drive.angle()
-        mileage += drive_angle_now - drive_angle_old
-        drive_angle_old = drive_angle_now
-        if mileage >= target_length:
-            running = False
+        was_blue = on_blue
+    
+    motor_left.run(0)
+    motor_right.run(0)
 
 def exit():
     global speed
