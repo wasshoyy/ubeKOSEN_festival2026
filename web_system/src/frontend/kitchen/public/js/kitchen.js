@@ -48,9 +48,9 @@ function renderKitchen() {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td>${order.order_item_id}</td>
+      <td>${order.order_id}</td>
       <td>${order.item.item_name}</td>
-      <td>${order.robot_id}</td>
+      <td>${order.seat_id !== null ? `席 ${order.seat_id-1}` : "テイクアウト"}</td>
       <td>
         <button class="cook-button">${order.cook_status}</button>
       </td>
@@ -124,7 +124,15 @@ async function loadKitchen() {
   try {
     const data = await request("/api/staff/orders/paid");
     orderitem_Info = data.order_item_info;
+
+    // 最新の注文がある最後のページを表示
+    currentPage = Math.max(
+      1,
+      Math.ceil(orderitem_Info.length / pageSize)
+    );
+
     renderKitchen();
+
   } catch (err) {
     console.error("厨房情報の取得に失敗しました:", err);
   }

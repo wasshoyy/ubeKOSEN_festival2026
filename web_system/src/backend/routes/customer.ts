@@ -4,6 +4,8 @@ import { session } from "../app/session.js";
 import { subscribeOrder } from "../app/orderEvents.js";
 import { notifyNewOrder } from "../app/orderEvents.js";
 import { notifychangeSeat } from "../app/orderEvents.js";
+//要確認
+import { subscribeDelivered } from "../app/orderEvents.js";
 
 const router = express.Router();
 class OutOfStockError extends Error {}
@@ -296,6 +298,144 @@ router.get("/order/events", session, async (req, res) => {
     }
 
     subscribeOrder(orderId, res);
+});
+
+
+
+//要確認
+// 配達完了通知用のSSE
+router.get("/delivery-events", session, async (req, res) => {
+    const orderId = Number(req.query.order_id);
+
+    if (!Number.isInteger(orderId) || orderId < 1) {
+        return res.status(400).json({
+            error: "order_idにエラーあり"
+        });
+    }
+
+    // この注文が自分のセッションに紐づいているか確認
+    const result = await pool.query(
+        `SELECT current_order_id
+         FROM sessions
+         WHERE session_id = $1`,
+        [req.sessionId]
+    );
+
+    if (
+        result.rows.length === 0 ||
+        Number(result.rows[0].current_order_id) !== orderId
+    ) {
+        return res.status(403).json({
+            error: "この注文を監視できません"
+        });
+    }
+
+    // SSE接続
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    // この注文のお客さんだけを通知対象にする
+    subscribeDelivered(orderId, res);
+});
+
+
+
+
+
+// 退室API
+router.post("/exit", session, async (req, res) => {
+    // DB接続を取得
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        // セッションに紐づいている注文を取得
+        // 注文行をロックして、二重処理を防ぐ
+        const orderResult = await client.query(
+            `SELECT
+                o.order_id,
+                o.seat_id,
+                o.people,
+                o.order_type,
+                o.seat_released_at
+             FROM sessions s
+             JOIN orders o
+               ON s.current_order_id = o.order_id
+             WHERE s.session_id = $1
+             FOR UPDATE OF o`,
+            [req.sessionId]
+        );
+
+        if (orderResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({
+                error: "注文が見つかりません"
+            });
+        }
+
+        const order = orderResult.rows[0];
+
+        // テイクアウトの場合は席を解放する必要がない
+        if (order.order_type !== "EAT_IN") {
+            await client.query("ROLLBACK");
+            return res.status(400).json({
+                error: "イートイン注文ではありません"
+            });
+        }
+
+        // すでに退室済みなら、capacityを再度減らさない
+        if (order.seat_released_at !== null) {
+            await client.query("COMMIT");
+            return res.status(200).json({
+                message: "すでに退室済みです"
+            });
+        }
+
+        // 退室済みの日時を記録
+        await client.query(
+            `UPDATE orders
+            SET seat_released_at = NOW()
+            WHERE order_id = $1`,
+            [order.order_id]
+        );
+
+
+        // 退室済みの日時を記録
+        await client.query(
+            `UPDATE orders
+             SET seat_released_at = NOW()
+             WHERE order_id = $1`,
+            [order.order_id]
+        );
+
+        // すべて成功したので確定
+        await client.query("COMMIT");
+
+        // 席情報が変更されたことをSSEで通知
+        notifychangeSeat(order.order_id);
+
+        return res.status(200).json({
+            message: "退室しました",
+            order_id: order.order_id,
+            seat_id: order.seat_id,
+            released_people: order.people
+        });
+
+    } catch (error) {
+        await client.query("ROLLBACK");
+
+        console.error("退室処理に失敗しました:", error);
+
+        return res.status(500).json({
+            error: "退室処理に失敗しました"
+        });
+
+    } finally {
+        client.release();
+    }
 });
 
 

@@ -2,7 +2,9 @@
 import express from "express";
 import { pool } from "../app/db.js";
 import { ok } from "assert";
-import { notifyDeliverted, notifyOrderPaid, subscribeChangeSeat } from "../app/orderEvents.js";
+//要確認
+//import { notifyDeliverted, notifyOrderPaid, subscribeChangeSeat } from "../app/orderEvents.js";
+import {notifyDelivered,notifyDeliverted,notifyOrderPaid,subscribeChangeSeat} from "../app/orderEvents.js";
 import { subscribeNewOrders } from "../app/orderEvents.js";
 import { subscribeNewPaidOrders } from "../app/orderEvents.js";
 import { notifyNewPaidOrders } from "../app/orderEvents.js";
@@ -258,24 +260,25 @@ router.get(
         //JOINし、必要なデータ取る。
         const order_items = await pool.query(
             `SELECT
-                orders.order_id, orders.seat_id,
-                order_item.order_item_id, order_item.item_id,
+                orders.order_id,
+                orders.seat_id,
+                order_item.order_item_id,
+                order_item.item_id,
                 item.item_name,
-                delivery_tasks.robot_id, delivery_tasks.cook_status, delivery_tasks.delivery_status,
-                robot.status AS robot_status
-                FROM orders
-                INNER JOIN order_item
-                    ON orders.order_id = order_item.order_id
-                INNER JOIN item
-                    ON item.item_id = order_item.item_id
-                INNER JOIN delivery_tasks
-                    ON delivery_tasks.order_item_id = order_item.order_item_id
-                LEFT JOIN robot
-                    ON robot.robot_id = delivery_tasks.robot_id
-                WHERE orders.order_status = 'paid'
-                    AND orders.order_type IN ('EAT_IN', 'TAKE_OUT')
-                ORDER BY orders.order_id ASC,
-                    order_item.order_item_id ASC;`
+                delivery_tasks.robot_id,
+                delivery_tasks.cook_status,
+                delivery_tasks.delivery_status
+            FROM orders
+            INNER JOIN order_item
+                ON orders.order_id = order_item.order_id
+            INNER JOIN item
+                ON item.item_id = order_item.item_id
+            INNER JOIN delivery_tasks
+                ON delivery_tasks.order_item_id = order_item.order_item_id
+            WHERE orders.order_status = 'paid'
+                AND orders.order_type IN ('EAT_IN', 'TAKE_OUT')
+            ORDER BY orders.order_id ASC,
+                order_item.order_item_id ASC;`
         );
 
         let order_item_info = [];
@@ -367,7 +370,10 @@ router.post("/orders/deli", async (req, res) => {
             ["deliveryed", order_item_id]
         );
 
+        // 従来の配達状況変更通知
+        notifyDeliverted(task.rows[0].order_id);
 
+        
         //すべての注文が届いたかどうか、
         const remaining = await pool.query(
             `SELECT COUNT(*) AS count
@@ -381,8 +387,9 @@ router.post("/orders/deli", async (req, res) => {
 
 
         console.log("注文の配達ステータス変更完了");
+        //要確認
         if (Number(remaining.rows[0].count) === 0) {
-            notifyDeliverted(task.rows[0].order_id);
+            notifyDelivered(task.rows[0].order_id);
         }
 
 

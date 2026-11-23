@@ -8,11 +8,27 @@ const orderId = sessionStorage.getItem("orderId");
 
 // ---- 右上：注文情報を埋める ----
 function renderOrderInfo() {
-  let totalPrice = 0;
-  Object.entries(cart).forEach(([itemId, qty]) => {
-    const item = menuItems.find((i) => i.id === itemId);
-    if (item) totalPrice += item.price * qty;//合計金額
-  });
+  // 注文確定時に保存した合計金額を取得
+  const totalPrice = Number(
+    sessionStorage.getItem("orderTotal") || 0
+  );
+
+  document.getElementById("order-id").textContent = orderId ?? "未設定";
+
+  document.getElementById("order-seat").textContent =
+    orderInfo && orderInfo.method === "eatin" ? "PT-01" : "テイクアウト";
+
+  document.getElementById("order-price").textContent = `¥${totalPrice}`;
+
+  document.getElementById("order-time").textContent =
+    new Date().toLocaleString("ja-JP", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+
 
   // 注文番号・席番号はまだサーバー/席自動割当が実装されてないのでダミー
   document.getElementById("order-id").textContent = orderId ?? "未設定";
@@ -47,48 +63,102 @@ function setStatus(state) {
   }
 }
 
+//要確認
+// const eventSource = new EventSource("/api/staff/delivery-events");
 
-const eventSource = new EventSource("/api/staff/delivery-events");
+// eventSource.onmessage = (event) => {
+//   const order = JSON.parse(event.data);
 
-eventSource.onmessage = (event) => {
+//   if (
+//     order.event_type === "deliverted" &&
+//     Number(order.order_id) === Number(orderId)
+//   ) {
+//     eventSource.close();
+
+//     // すべての商品が配達済みになった
+//     setStatus("completed");
+//   }
+// };
+
+// eventSource.onerror = (error) => {
+//   console.error("配達完了の通知でエラーが発生しました:", error);
+// };
+
+// eventSource.onmessage = (event) => {
+//   const order = JSON.parse(event.data);
+
+//   if (
+//     order.event_type === "deliverted" &&
+//     Number(order.order_id) === Number(sessionStorage.getItem("orderId"))
+//   ) {
+//     eventSource.close();
+//     setStatus("waiting");
+//   }
+// };
+
+
+
+// // ---- ロボットが帰還ボタンを押されたら、この画面もresult.htmlへ切り替える ----
+// // 今は一定時間後に自動遷移
+// setTimeout(() => {
+//   window.location.href = "result.html";
+// }, 
+// 11000);
+
+
+
+
+//要確認
+// ---- 古い配達状況通知（既存の仕組み） ----
+const oldEventSource = new EventSource("/api/staff/delivery-events");
+
+oldEventSource.onmessage = (event) => {
   const order = JSON.parse(event.data);
 
   if (
     order.event_type === "deliverted" &&
     Number(order.order_id) === Number(orderId)
   ) {
-    eventSource.close();
-
-    // すべての商品が配達済みになった
-    setStatus("completed");
-  }
-};
-
-eventSource.onerror = (error) => {
-  console.error("配達完了の通知でエラーが発生しました:", error);
-};
-
-eventSource.onmessage = (event) => {
-  const order = JSON.parse(event.data);
-
-  if (
-    order.event_type === "deliverted" &&
-    Number(order.order_id) === Number(sessionStorage.getItem("orderId"))
-  ) {
-    eventSource.close();
+    // 配達状況が変更された
     setStatus("waiting");
   }
 };
 
+oldEventSource.onerror = (error) => {
+  console.error("配達状況の通知でエラーが発生しました:", error);
+};
 
 
-// ---- ロボットが帰還ボタンを押されたら、この画面もresult.htmlへ切り替える ----
-// 今は一定時間後に自動遷移
-setTimeout(() => {
-  window.location.href = "result.html";
-}, 
-//11000);
-110000000);
+// ---- 新しい配達完了通知（今回追加する仕組み） ----
+const deliveryEventSource = new EventSource(
+  `/api/customer/delivery-events?order_id=${encodeURIComponent(orderId)}`
+);
+
+deliveryEventSource.onmessage = (event) => {
+  const order = JSON.parse(event.data);
+
+  if (
+    order.event_type === "delivery_completed" &&
+    Number(order.order_id) === Number(orderId)
+  ) {
+    // 配達完了通知を受け取った
+    deliveryEventSource.close();
+    oldEventSource.close();
+
+    // 注文完了の表示に変更
+    setStatus("completed");
+
+    // 1分後に結果画面へ移動
+    setTimeout(() => {
+      window.location.href = "/app/result.html";
+    }, 60 * 1000);
+  }
+};
+
+deliveryEventSource.onerror = (error) => {
+  console.error("配達完了の通知でエラーが発生しました:", error);
+};
+
 
 
 
@@ -225,3 +295,4 @@ function buildTempGraph() {
   tick();
   setInterval(tick, 600); // 0.6秒ごとに更新
 }
+

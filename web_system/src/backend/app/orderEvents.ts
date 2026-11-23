@@ -156,3 +156,45 @@ export function notifyDeliverted(orderId: number) {
         res.write(message);
     }
 }
+
+
+
+
+//要確認。
+// 注文ごとの配達完了SSE接続を管理
+const deliveryClients = new Map<number, Set<Response>>();
+
+// お客さんのSSE接続を登録
+export function subscribeDelivered(orderId: number, res: Response) {
+    if (!deliveryClients.has(orderId)) {
+        deliveryClients.set(orderId, new Set());
+    }
+
+    deliveryClients.get(orderId)!.add(res);
+
+    res.on("close", () => {
+        const subscribers = deliveryClients.get(orderId);
+        if (!subscribers) return;
+
+        subscribers.delete(res);
+
+        if (subscribers.size === 0) {
+            deliveryClients.delete(orderId);
+        }
+    });
+}
+
+// その注文の配膳がすべて完了したら通知
+export function notifyDelivered(orderId: number) {
+    const subscribers = deliveryClients.get(orderId);
+    if (!subscribers) return;
+
+    const message = `data: ${JSON.stringify({
+        event_type: "delivery_completed",
+        order_id: orderId
+    })}\n\n`;
+
+    for (const res of subscribers) {
+        res.write(message);
+    }
+}

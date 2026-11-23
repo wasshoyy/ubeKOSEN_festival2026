@@ -97,8 +97,8 @@ CREATE TABLE IF NOT EXISTS delivery_tasks
 INSERT INTO item (item_id, item_name, price, stock)
 VALUES
     (1, 'ABCスープ', 200, 100),
-    (2, 'みそ汁', 200, 100),
-    (3, 'コーンスープ', 200, 100)
+    (2, 'みそ汁', 200, 50),
+    (3, 'コーンスープ', 200, 50)
 ON CONFLICT (item_id) DO NOTHING;
 
 INSERT INTO seat (seat_id, capacity)
